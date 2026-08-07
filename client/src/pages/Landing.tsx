@@ -23,24 +23,27 @@ const fadeUp = {
 
 const DEMOS: { tag: string; title: string; client: string; blurb: string; slug: string }[] = [
   {
-    tag: "Mobile development",
+    tag: "App development",
     title: "Mobile App for GreenCafe",
     client: "Sarah Mitchell",
-    blurb: "Flutter ordering app with an admin dashboard and loyalty add-ons. $10.8k base · 7 weeks.",
+    blurb:
+      "The full-size deal: a café ordering app where two toggles turn $10.8k into $13k — plus a client question already answered in the thread.",
     slug: "greencafe-mobile-app",
   },
   {
-    tag: "Motion & animation",
+    tag: "Motion design",
     title: "Brand Motion Package for Pulse Fitness",
     client: "Marcus Reed",
-    blurb: "Motion system, hero launch spot and social cutdowns — with its own brand accent. $7.2k base · 5 weeks.",
+    blurb:
+      "Same template, different brand — this one ships in the client's violet, with a motion system, hero spot and a price-lock date.",
     slug: "pulse-brand-motion",
   },
   {
-    tag: "Website",
+    tag: "Web design",
     title: "Landing Page for Nordic Yoga Studio",
     client: "Elin Berg",
-    blurb: "A calm one-pager with booking and SEO add-ons. $2.5k base · 2 weeks.",
+    blurb:
+      "Proof it works for small deals too: a two-week site with booking and SEO add-ons, still sitting in draft.",
     slug: "nordic-yoga-landing",
   },
 ];
@@ -190,7 +193,8 @@ export default function Landing() {
               Pick a proposal, make it yours
             </h2>
             <p className="mt-3 text-ink-soft">
-              The template ships with three seeded proposals — open one, toggle the add-ons, sign it.
+              Three niches, three price points, three looks — open one as the client: toggle
+              add-ons, ask a question, sign it.
             </p>
           </motion.div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">

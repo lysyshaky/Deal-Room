@@ -212,30 +212,59 @@ export default function Timeline({ milestones, addonPhases }: Props) {
                 </span>
               )}
               <span className="ml-auto hidden text-xs font-medium text-ink-faint sm:block">
-                {expanded.deliverables.length} deliverable{expanded.deliverables.length === 1 ? "" : "s"}
+                Phase {blocks.indexOf(expanded) + 1} of {blocks.length}
               </span>
             </div>
-            <ul className="grid gap-2.5 bg-cream-deep/50 p-5 sm:grid-cols-2 md:p-6">
-              {expanded.deliverables.map((d, i) => (
-                <motion.li
-                  key={d}
-                  initial={{ opacity: 0, x: -14 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + i * 0.07, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-center gap-3 rounded-xl border border-ink/10 bg-white px-4 py-3"
-                >
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.14 + i * 0.07, type: "spring", stiffness: 520, damping: 22 }}
-                    className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-ember text-white"
+            <div className="bg-cream-deep/50 p-5 md:p-6">
+              {/* Where this phase sits in the whole project */}
+              <div className="mb-5 flex items-center gap-3.5">
+                <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-ink/10">
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    className={`absolute inset-y-0 origin-left rounded-full ${
+                      expanded.isAddon ? "bg-ember" : "bg-ink"
+                    }`}
+                    style={{
+                      left: `${(expanded.weekStart / Math.max(1, totalWeeks)) * 100}%`,
+                      width: `${(expanded.weekLength / Math.max(1, totalWeeks)) * 100}%`,
+                    }}
+                  />
+                </div>
+                <span className="flex-none text-xs font-semibold tabular-nums text-ink-faint">
+                  {formatWeeks(expanded.weekLength)} of {totalWeeks}
+                </span>
+              </div>
+
+              <ul className="grid gap-2.5 sm:grid-cols-2">
+                {expanded.deliverables.map((d, i) => (
+                  <motion.li
+                    key={d}
+                    initial={{ opacity: 0, x: -14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + i * 0.07, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex items-center gap-3 rounded-xl border border-ink/10 bg-white px-4 py-3 transition-colors hover:border-ember/40"
                   >
-                    <CheckIcon className="h-3.5 w-3.5" />
-                  </motion.span>
-                  <span className="text-sm font-medium">{d}</span>
-                </motion.li>
-              ))}
-            </ul>
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.14 + i * 0.07, type: "spring", stiffness: 520, damping: 22 }}
+                      className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-ember text-white"
+                    >
+                      <CheckIcon className="h-3.5 w-3.5" />
+                    </motion.span>
+                    <span className="text-sm font-medium">{d}</span>
+                  </motion.li>
+                ))}
+              </ul>
+
+              <p className="mt-4 text-xs text-ink-faint">
+                {expanded.isAddon
+                  ? "Joins the roadmap when this add-on is toggled on — remove it any time before signing."
+                  : `All ${expanded.deliverables.length} deliverables in this phase are included in the fixed price.`}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
