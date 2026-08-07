@@ -223,36 +223,63 @@ export default function PublicDeal() {
 
       {/* ---------- Scope ---------- */}
       <section ref={scopeRef} className="border-t border-ink/5 px-6 py-16 md:py-20">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <motion.div {...fadeUp}>
             <p className="eyebrow">What's included</p>
             <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">The scope</h2>
           </motion.div>
-          <div className="mt-10">
+
+          <div className="mt-10 space-y-4">
             {base.map((option, i) => (
               <motion.div
                 key={option.id}
                 {...fadeUp}
-                className="group flex gap-5 border-b border-ink/10 py-7 first:border-t md:gap-8"
+                transition={{ ...fadeUp.transition, delay: i * 0.07 }}
+                className="group card relative overflow-hidden p-6 transition-all hover:-translate-y-0.5 hover:shadow-pop md:p-7"
               >
-                <span className="font-display text-lg font-semibold text-ink/25 transition-colors group-hover:text-ember">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -right-2 -top-7 font-display text-[7rem] font-bold leading-none text-ink/[0.04] transition-colors group-hover:text-ember/10"
+                >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <div className="relative flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-ember-soft font-display text-base font-bold text-ember-deep">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="min-w-0 flex-1">
                     <h3 className="font-display text-xl font-semibold md:text-2xl">{option.name}</h3>
-                    <span className="text-sm font-medium text-ink-faint">
-                      {option.weeks > 0 ? `${formatWeeks(option.weeks)} · ` : ""}
-                      {formatMoney(option.price_cents, currency)}
-                    </span>
+                    {option.description && (
+                      <p className="mt-2 max-w-xl leading-relaxed text-ink-soft">{option.description}</p>
+                    )}
                   </div>
-                  {option.description && (
-                    <p className="mt-2 max-w-xl leading-relaxed text-ink-soft">{option.description}</p>
-                  )}
+                  <div className="flex flex-row items-center gap-3 md:flex-col md:items-end md:gap-1.5">
+                    <p className="font-display text-2xl font-semibold tabular-nums tracking-tight">
+                      {formatMoney(option.price_cents, currency)}
+                    </p>
+                    {option.weeks > 0 && (
+                      <span className="rounded-full bg-cream-deep px-2.5 py-1 text-xs font-semibold text-ink-soft">
+                        {formatWeeks(option.weeks)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            {...fadeUp}
+            className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-2xl bg-ink px-6 py-5 text-cream md:px-8"
+          >
+            <p className="text-sm font-medium text-cream/70">
+              Everything above is included in every package
+            </p>
+            <p className="font-display text-xl font-semibold tabular-nums">
+              {formatMoney(base.reduce((s, o) => s + o.price_cents, 0), currency)}
+              <span className="text-cream/50"> · {formatWeeks(baseWeeks)}</span>
+            </p>
+          </motion.div>
         </div>
       </section>
 
