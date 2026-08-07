@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import Toggle from "@/components/deal/Toggle";
 import { EyeIcon, FlameIcon } from "@/components/Icons";
 import StatusBadge from "@/components/StatusBadge";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+import { formatMoney, formatWeeks } from "@/lib/format";
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -10,16 +14,40 @@ const fadeUp = {
   transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
 };
 
+const DEMOS: { tag: string; title: string; client: string; blurb: string; slug: string }[] = [
+  {
+    tag: "Mobile development",
+    title: "Mobile App for GreenCafe",
+    client: "Sarah Mitchell",
+    blurb: "Flutter ordering app with an admin dashboard and loyalty add-ons. $10.8k base · 7 weeks.",
+    slug: "greencafe-mobile-app",
+  },
+  {
+    tag: "Motion & animation",
+    title: "Brand Motion Package for Pulse Fitness",
+    client: "Marcus Reed",
+    blurb: "Motion system, hero launch spot and social cutdowns. $7.2k base · 5 weeks.",
+    slug: "pulse-brand-motion",
+  },
+  {
+    tag: "Website",
+    title: "Landing Page for Nordic Yoga Studio",
+    client: "Elin Berg",
+    blurb: "A calm one-pager with booking and SEO add-ons. $2.5k base · 2 weeks.",
+    slug: "nordic-yoga-landing",
+  },
+];
+
 const FEATURES: { title: string; detail: string }[] = [
   {
     title: "Price configurator",
     detail:
-      "Clients toggle add-ons and watch the total price and timeline tween live. A sticky summary follows them on mobile.",
+      "Clients toggle add-ons and watch the total price and timeline tween live, with an itemized breakdown.",
   },
   {
     title: "Interactive roadmap",
     detail:
-      "A horizontal week-by-week timeline that recalculates as options change. Tap any phase to reveal its deliverables.",
+      "A week-by-week timeline that recalculates as options change. Tap any phase to reveal its deliverables.",
   },
   {
     title: "Sign & celebrate",
@@ -29,7 +57,7 @@ const FEATURES: { title: string; detail: string }[] = [
   {
     title: "Owner analytics",
     detail:
-      "See every view, section read and option toggle per deal. A flame badge tells you when a client keeps coming back.",
+      "Every view, section read and option toggle per deal. A flame badge tells you when a client keeps coming back.",
   },
   {
     title: "Deal editor",
@@ -39,9 +67,73 @@ const FEATURES: { title: string; detail: string }[] = [
   {
     title: "Simple stack",
     detail:
-      "React + Express + your own free Supabase. All data flows through the API — no client-side keys, no vendor lock-in.",
+      "React + Express + your own free Supabase. All data flows through the API — no client-side keys, no lock-in.",
   },
 ];
+
+/** The real configurator components, running on sample numbers. */
+function MiniConfigurator() {
+  const [dashboard, setDashboard] = useState(true);
+  const [loyalty, setLoyalty] = useState(false);
+
+  const totalCents = 1080000 + (dashboard ? 220000 : 0) + (loyalty ? 140000 : 0);
+  const totalWeeks = 7 + (dashboard ? 2 : 0) + (loyalty ? 1 : 0);
+  const animatedCents = useAnimatedNumber(totalCents);
+  const animatedWeeks = useAnimatedNumber(totalWeeks);
+
+  return (
+    <div className="card relative p-6 md:p-7">
+      <span className="absolute -top-3 left-6 rounded-full bg-ember px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+        Try me
+      </span>
+      <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+        Total investment
+      </p>
+      <p className="mt-1 font-display text-4xl font-semibold tabular-nums tracking-tight">
+        {formatMoney(Math.round(animatedCents / 100) * 100, "USD")}
+      </p>
+      <p className="mt-1 text-sm text-ink-faint">
+        Timeline: <span className="font-semibold text-ink">{formatWeeks(Math.round(animatedWeeks))}</span>
+      </p>
+      <div className="mt-5 space-y-3 border-t border-ink/10 pt-5">
+        {[
+          {
+            name: "Admin Dashboard",
+            meta: "+$2,200 · +2 weeks",
+            on: dashboard,
+            toggle: () => setDashboard((v) => !v),
+          },
+          {
+            name: "Loyalty Program Module",
+            meta: "+$1,400 · +1 week",
+            on: loyalty,
+            toggle: () => setLoyalty((v) => !v),
+          },
+        ].map((row) => (
+          <div
+            key={row.name}
+            className={`flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-colors ${
+              row.on ? "border-ember bg-ember-soft/50" : "border-ink/10"
+            }`}
+          >
+            <div>
+              <p className="text-sm font-semibold">{row.name}</p>
+              <p className="text-xs font-medium text-ember-deep">{row.meta}</p>
+            </div>
+            <Toggle on={row.on} onToggle={row.toggle} label={`Include ${row.name}`} />
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-xs text-ink-faint">
+        ↑ This is the real component your clients get — see it in a{" "}
+        <Link to="/deal/greencafe-mobile-app" className="font-semibold text-ember-deep hover:underline">
+          full proposal
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
 
 export default function Landing() {
   return (
@@ -60,21 +152,23 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="px-6 pb-20 pt-16 md:pt-28">
-        <div className="mx-auto max-w-3xl text-center">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+      {/* Hero with live mini demo */}
+      <section className="px-6 pb-16 pt-14 md:pt-20">
+        <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
             <p className="eyebrow">For freelancers & agencies</p>
             <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight md:text-6xl">
-              Send proposals clients
-              <br />
-              can <span className="text-ember">say yes</span> to
+              Send proposals clients can <span className="text-ember">say yes</span> to
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
               Replace static PDFs with an interactive deal page: clients build their own package,
               explore the timeline, and sign right there — while you watch it happen.
             </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link to="/deal/greencafe-mobile-app" className="btn-primary !px-7 !py-3.5">
                 See a live proposal
               </Link>
@@ -82,25 +176,90 @@ export default function Landing() {
                 Open the dashboard
               </Link>
             </div>
+            <div className="mt-10 flex flex-wrap items-center gap-2 text-ink-faint">
+              {(["draft", "sent", "viewed", "accepted"] as const).map((s, i) => (
+                <span key={s} className="flex items-center gap-2">
+                  {i > 0 && <span className="text-ink/20">→</span>}
+                  <StatusBadge status={s} />
+                </span>
+              ))}
+            </div>
           </motion.div>
 
-          {/* Status flow strip */}
           <motion.div
-            {...fadeUp}
-            className="mx-auto mt-14 flex max-w-xl flex-wrap items-center justify-center gap-2 text-ink-faint"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
-            {(["draft", "sent", "viewed", "accepted"] as const).map((s, i) => (
-              <span key={s} className="flex items-center gap-2">
-                {i > 0 && <span className="text-ink/20">→</span>}
-                <StatusBadge status={s} />
-              </span>
+            <MiniConfigurator />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Demo gallery */}
+      <section className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <motion.div {...fadeUp} className="max-w-2xl">
+            <p className="eyebrow">Three ready-made demos</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">
+              Pick a proposal, make it yours
+            </h2>
+            <p className="mt-3 text-ink-soft">
+              The template ships with three seeded proposals — open one, toggle the add-ons, sign it.
+            </p>
+          </motion.div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {DEMOS.map((demo, i) => (
+              <motion.div
+                key={demo.slug}
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: i * 0.07 }}
+              >
+                <Link
+                  to={`/deal/${demo.slug}`}
+                  className="card group flex h-full flex-col p-6 transition-all hover:-translate-y-1 hover:shadow-pop"
+                >
+                  <p className="eyebrow !text-[11px]">{demo.tag}</p>
+                  <h3 className="mt-2.5 font-display text-xl font-semibold leading-snug group-hover:text-ember">
+                    {demo.title}
+                  </h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-soft">{demo.blurb}</p>
+                  <p className="mt-4 text-sm font-semibold text-ember-deep">
+                    Open proposal <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  </p>
+                </Link>
+              </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Demo video */}
+      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-4xl">
+          <motion.div {...fadeUp} className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">60-second tour</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">See it in action</h2>
+            <p className="mt-3 text-ink-soft">
+              From opening the proposal to signing it — the whole client journey in one take.
+            </p>
+          </motion.div>
+          <motion.div {...fadeUp} className="mt-9 overflow-hidden rounded-2xl bg-ink shadow-pop">
+            <video
+              src="/demo.mp4"
+              controls
+              muted
+              autoPlay
+              loop
+              playsInline
+              className="aspect-video w-full"
+            />
           </motion.div>
         </div>
       </section>
 
       {/* Feature grid */}
-      <section className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
+      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="max-w-2xl">
             <p className="eyebrow">What's inside</p>
@@ -109,8 +268,13 @@ export default function Landing() {
             </h2>
           </motion.div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <motion.div key={f.title} {...fadeUp} className="card p-6">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: (i % 3) * 0.06 }}
+                className="card p-6"
+              >
                 <h3 className="font-display text-lg font-semibold">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.detail}</p>
               </motion.div>
@@ -120,7 +284,7 @@ export default function Landing() {
       </section>
 
       {/* Analytics teaser */}
-      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
+      <section className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
         <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2">
           <motion.div {...fadeUp}>
             <p className="eyebrow">Know where you stand</p>
@@ -131,6 +295,9 @@ export default function Landing() {
               Every proposal page reports back: page views, which sections got read, and which
               add-ons the client kept toggling. Follow up at exactly the right moment.
             </p>
+            <Link to="/dashboard" className="btn-ghost mt-6">
+              Explore the dashboard
+            </Link>
           </motion.div>
           <motion.div {...fadeUp} className="card p-6">
             <div className="flex items-center justify-between">
@@ -187,6 +354,11 @@ export default function Landing() {
                 </li>
               ))}
             </ol>
+            <div className="mt-8 flex flex-wrap gap-4 text-sm">
+              <Link to="/design" className="font-semibold text-cream underline-offset-4 hover:underline">
+                Browse the design system →
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>

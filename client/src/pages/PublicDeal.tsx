@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Deal, DealDetail, Option } from "@shared/schema";
@@ -10,7 +10,7 @@ import Spinner from "@/components/Spinner";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { useSectionRef } from "@/hooks/useSectionTracker";
 import { api } from "@/lib/api";
-import { formatMoney, formatWeeks, toEmbedUrl } from "@/lib/format";
+import { formatMoney, formatWeeks, isDirectVideoUrl, toEmbedUrl } from "@/lib/format";
 import { track, trackOncePerSession } from "@/lib/track";
 
 const fadeUp = {
@@ -155,15 +155,19 @@ export default function PublicDeal() {
             </div>
           )}
 
-          {embedUrl && (
+          {deal.video_url && embedUrl && (
             <motion.div {...fadeUp} className="mt-10 overflow-hidden rounded-2xl bg-ink shadow-card">
-              <iframe
-                src={embedUrl}
-                title="Proposal video"
-                className="aspect-video w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {isDirectVideoUrl(deal.video_url) ? (
+                <video src={deal.video_url} controls playsInline className="aspect-video w-full" />
+              ) : (
+                <iframe
+                  src={embedUrl}
+                  title="Proposal video"
+                  className="aspect-video w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
             </motion.div>
           )}
         </div>
@@ -260,20 +264,51 @@ export default function PublicDeal() {
                 <p className="mt-1.5 text-sm text-ink-faint">
                   Estimated timeline: <span className="font-semibold text-ink">{displayWeeks}</span>
                 </p>
+                <div className="mt-3 flex h-1.5 overflow-hidden rounded-full bg-ink/10">
+                  <motion.div layout className="bg-ink" style={{ flexGrow: baseWeeks, flexBasis: 0 }} />
+                  <motion.div
+                    layout
+                    className="bg-ember"
+                    style={{ flexGrow: totalWeeks - baseWeeks, flexBasis: 0 }}
+                  />
+                </div>
+                <div className="mt-1.5 flex justify-between text-[11px] font-medium text-ink-faint">
+                  <span>{formatWeeks(baseWeeks)} core</span>
+                  {totalWeeks > baseWeeks && (
+                    <span className="text-ember-deep">+{formatWeeks(totalWeeks - baseWeeks)} add-ons</span>
+                  )}
+                </div>
                 <div className="my-5 border-t border-ink/10" />
-                <ul className="space-y-2.5">
+                <ul>
                   {base.map((o) => (
-                    <li key={o.id} className="flex items-center gap-2.5 text-sm text-ink-soft">
+                    <li key={o.id} className="flex items-center gap-2.5 py-1 text-sm text-ink-soft">
                       <CheckIcon className="h-3.5 w-3.5 flex-none text-ink/30" />
-                      {o.name}
+                      <span className="min-w-0 flex-1 truncate">{o.name}</span>
+                      <span className="flex-none text-xs tabular-nums text-ink-faint">
+                        {formatMoney(o.price_cents, currency)}
+                      </span>
                     </li>
                   ))}
-                  {chosenAddons.map((o) => (
-                    <li key={o.id} className="flex items-center gap-2.5 text-sm font-medium">
-                      <CheckIcon className="h-3.5 w-3.5 flex-none text-ember" />
-                      {o.name}
-                    </li>
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {chosenAddons.map((o) => (
+                      <motion.li
+                        key={o.id}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-center gap-2.5 py-1 text-sm font-medium">
+                          <CheckIcon className="h-3.5 w-3.5 flex-none text-ember" />
+                          <span className="min-w-0 flex-1 truncate">{o.name}</span>
+                          <span className="flex-none text-xs font-semibold tabular-nums text-ember-deep">
+                            +{formatMoney(o.price_cents, currency)}
+                          </span>
+                        </div>
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
                 </ul>
                 {!accepted && (
                   <button onClick={() => setModalOpen(true)} className="btn-primary mt-6 w-full">

@@ -70,13 +70,15 @@ create index events_deal_id_idx on public.events (deal_id);
 -- ============================================================
 
 -- Deal 1: a realistic proposal that has already been sent & viewed
-insert into public.deals (id, slug, title, client_name, client_company, intro, currency, status) values (
+-- (video_url points at the demo video bundled with the template in client/public)
+insert into public.deals (id, slug, title, client_name, client_company, intro, video_url, currency, status) values (
   '11111111-1111-1111-1111-111111111111',
   'greencafe-mobile-app',
   'Mobile App for GreenCafe',
   'Sarah Mitchell',
   'GreenCafe',
   'Hi Sarah — thanks for walking me through GreenCafe''s plans last week. Below is exactly how I''d get your ordering app into your customers'' hands in about seven weeks: what''s included, what it costs, and what happens at every step. Toggle the add-ons to shape the package, and when it feels right, accept directly on this page.',
+  '/demo.mp4',
   'USD',
   'sent'
 );
@@ -126,24 +128,90 @@ insert into public.events (deal_id, type, meta, created_at) values
   ('11111111-1111-1111-1111-111111111111', 'view', '{}', now() - interval '6 hours'),
   ('11111111-1111-1111-1111-111111111111', 'view', '{}', now() - interval '1 hour');
 
--- Deal 2: a minimal draft
+-- Deal 2: a website project (still a draft in the dashboard)
 insert into public.deals (id, slug, title, client_name, client_company, intro, currency, status) values (
   '22222222-2222-2222-2222-222222222222',
   'nordic-yoga-landing',
   'Landing Page for Nordic Yoga Studio',
   'Elin Berg',
   'Nordic Yoga Studio',
-  'Hi Elin — here''s the plan for a calm, fast landing page that turns visitors into class bookings.',
+  'Hi Elin — here''s the plan for a calm, fast landing page that turns visitors into booked mats. Two focused weeks, and the booking add-on means people can reserve a class without ever leaving the page.',
   'USD',
   'draft'
 );
 
 insert into public.options (deal_id, name, description, price_cents, weeks, kind, default_selected, sort_order) values
-  ('22222222-2222-2222-2222-222222222222', 'Landing Page Design & Build',
-   'A single-page site: hero, class schedule, pricing and contact. Fast, responsive, easy to update.',
-   120000, 1, 'base', false, 0);
+  ('22222222-2222-2222-2222-222222222222', 'Copy & Art Direction',
+   'Voice, structure and a moodboard that fits the studio''s calm, minimal brand.',
+   90000, 1, 'base', false, 0),
+  ('22222222-2222-2222-2222-222222222222', 'Design & Build',
+   'A fast one-pager: hero, class schedule, pricing, testimonials and contact. Responsive and easy to update.',
+   160000, 1, 'base', false, 1),
+  ('22222222-2222-2222-2222-222222222222', 'Class Booking Integration',
+   'Your booking system embedded on the page — visitors reserve a mat in two taps.',
+   60000, 1, 'addon', true, 2),
+  ('22222222-2222-2222-2222-222222222222', 'SEO & Analytics Setup',
+   'Technical SEO, meta tags and privacy-friendly analytics from day one.',
+   40000, 0, 'addon', false, 3);
 
 insert into public.milestones (deal_id, title, deliverables, week_start, week_length, sort_order) values
+  ('22222222-2222-2222-2222-222222222222', 'Copy & Direction',
+   array['Content workshop', 'Sitemap & copy draft', 'Moodboard sign-off'],
+   0, 1, 0),
   ('22222222-2222-2222-2222-222222222222', 'Design & Launch',
-   array['Copy & layout', 'Responsive build', 'Domain setup & launch'],
-   0, 1, 0);
+   array['Responsive build', 'Booking embed', 'Launch checklist & handover'],
+   1, 1, 1);
+
+-- Deal 3: a motion / animation project, sent & getting attention
+insert into public.deals (id, slug, title, client_name, client_company, intro, currency, status) values (
+  '33333333-3333-3333-3333-333333333333',
+  'pulse-brand-motion',
+  'Brand Motion Package for Pulse Fitness',
+  'Marcus Reed',
+  'Pulse Fitness',
+  'Hey Marcus — here''s how we''ll bring the new Pulse brand to life in motion: a reusable motion system, a hero spot for the launch, and cutdowns for every channel. Toggle the add-ons to match the launch plan, and accept right here when you''re ready.',
+  'USD',
+  'sent'
+);
+
+insert into public.options (deal_id, name, description, price_cents, weeks, kind, default_selected, sort_order) values
+  ('33333333-3333-3333-3333-333333333333', 'Motion Discovery & Storyboards',
+   'Creative direction, references and frame-by-frame storyboards for the launch spot.',
+   120000, 1, 'base', false, 0),
+  ('33333333-3333-3333-3333-333333333333', 'Brand Motion System',
+   'Logo animation, kinetic type and a transition kit — a reusable motion language for everything you ship.',
+   280000, 2, 'base', false, 1),
+  ('33333333-3333-3333-3333-333333333333', 'Hero Launch Animation',
+   'A 30-second hero spot delivered in 16:9 and 1:1, fully graded and mixed.',
+   320000, 2, 'base', false, 2),
+  ('33333333-3333-3333-3333-333333333333', 'Social Cuts Pack',
+   'Six 9:16 cutdowns sized and subtitled for Reels, TikTok and Shorts.',
+   110000, 1, 'addon', true, 3),
+  ('33333333-3333-3333-3333-333333333333', 'Lottie Web Animations',
+   'Key brand animations exported as Lottie files for your site and app.',
+   160000, 1, 'addon', false, 4),
+  ('33333333-3333-3333-3333-333333333333', 'Sound Design',
+   'A custom sound identity and final mix across every deliverable. No extra time added.',
+   80000, 0, 'addon', false, 5);
+
+insert into public.milestones (deal_id, title, deliverables, week_start, week_length, sort_order) values
+  ('33333333-3333-3333-3333-333333333333', 'Discovery & Boards',
+   array['Creative direction deck', 'Storyboards', 'Animatic for sign-off'],
+   0, 1, 0),
+  ('33333333-3333-3333-3333-333333333333', 'Motion System',
+   array['Logo & type animation', 'Transition kit', 'Usage guidelines'],
+   1, 2, 1),
+  ('33333333-3333-3333-3333-333333333333', 'Hero Spot & Delivery',
+   array['Animation & grade', 'Sound mix', 'Final files in every format'],
+   3, 2, 2);
+
+insert into public.events (deal_id, type, meta, created_at) values
+  ('33333333-3333-3333-3333-333333333333', 'view', '{}', now() - interval '2 days'),
+  ('33333333-3333-3333-3333-333333333333', 'section_view', '{"section": "pricing"}', now() - interval '2 days' + interval '2 minutes'),
+  ('33333333-3333-3333-3333-333333333333', 'option_toggle', '{"option_name": "Lottie Web Animations", "selected": true}', now() - interval '2 days' + interval '3 minutes'),
+  ('33333333-3333-3333-3333-333333333333', 'view', '{}', now() - interval '1 day'),
+  ('33333333-3333-3333-3333-333333333333', 'option_toggle', '{"option_name": "Lottie Web Animations", "selected": false}', now() - interval '1 day' + interval '1 minute'),
+  ('33333333-3333-3333-3333-333333333333', 'option_toggle', '{"option_name": "Sound Design", "selected": true}', now() - interval '1 day' + interval '2 minutes'),
+  ('33333333-3333-3333-3333-333333333333', 'view', '{}', now() - interval '8 hours'),
+  ('33333333-3333-3333-3333-333333333333', 'view', '{}', now() - interval '2 hours'),
+  ('33333333-3333-3333-3333-333333333333', 'section_view', '{"section": "timeline"}', now() - interval '2 hours' + interval '1 minute');

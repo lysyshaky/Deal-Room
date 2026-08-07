@@ -22,6 +22,11 @@ export function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
+/** Direct video files (or local paths) are rendered with <video>, not an iframe. */
+export function isDirectVideoUrl(url: string): boolean {
+  return /\.(mp4|webm|mov)(\?.*)?$/i.test(url) || url.startsWith("/");
+}
+
 /** Turn a pasted video URL into something embeddable. */
 export function toEmbedUrl(url: string): string {
   const youtube = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{6,})/);

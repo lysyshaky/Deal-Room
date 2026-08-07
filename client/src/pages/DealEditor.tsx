@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { DealDetail, DealStatus } from "@shared/schema";
 import AdminShell from "@/components/AdminShell";
-import { ArrowLeftIcon, PlusIcon, TrashIcon } from "@/components/Icons";
+import { ArrowLeftIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import { api } from "@/lib/api";
 
@@ -202,9 +202,17 @@ export default function DealEditor() {
         Back to deals
       </Link>
 
-      <h1 className="mb-8 font-display text-3xl font-semibold">
-        {editing ? "Edit deal" : "New deal"}
-      </h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-semibold">
+          {editing ? "Edit deal" : "New deal"}
+        </h1>
+        {form.slug && (
+          <a href={`/deal/${form.slug}`} target="_blank" rel="noreferrer" className="btn-ghost">
+            <EyeIcon className="h-3.5 w-3.5" />
+            Preview as client
+          </a>
+        )}
+      </div>
 
       <div className="space-y-6">
         {/* Basics */}
