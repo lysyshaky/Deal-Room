@@ -1,11 +1,18 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import Toggle from "@/components/deal/Toggle";
-import { EyeIcon, FlameIcon } from "@/components/Icons";
+import HeroShowcase from "@/components/HeroShowcase";
+import {
+  ChartIcon,
+  CubeIcon,
+  EyeIcon,
+  FeatherIcon,
+  FlameIcon,
+  LayersIcon,
+  PlusIcon,
+  RouteIcon,
+  SlidersIcon,
+} from "@/components/Icons";
 import StatusBadge from "@/components/StatusBadge";
-import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
-import { formatMoney, formatWeeks } from "@/lib/format";
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -26,7 +33,7 @@ const DEMOS: { tag: string; title: string; client: string; blurb: string; slug: 
     tag: "Motion & animation",
     title: "Brand Motion Package for Pulse Fitness",
     client: "Marcus Reed",
-    blurb: "Motion system, hero launch spot and social cutdowns. $7.2k base · 5 weeks.",
+    blurb: "Motion system, hero launch spot and social cutdowns — with its own brand accent. $7.2k base · 5 weeks.",
     slug: "pulse-brand-motion",
   },
   {
@@ -38,102 +45,44 @@ const DEMOS: { tag: string; title: string; client: string; blurb: string; slug: 
   },
 ];
 
-const FEATURES: { title: string; detail: string }[] = [
+const FEATURES: { icon: (p: { className?: string }) => JSX.Element; title: string; detail: string }[] = [
   {
+    icon: SlidersIcon,
     title: "Price configurator",
     detail:
       "Clients toggle add-ons and watch the total price and timeline tween live, with an itemized breakdown.",
   },
   {
+    icon: RouteIcon,
     title: "Interactive roadmap",
     detail:
-      "A week-by-week timeline that recalculates as options change. Tap any phase to reveal its deliverables.",
+      "A Gantt-style week-by-week plan that recalculates as options change. Tap any phase for its deliverables.",
   },
   {
+    icon: FeatherIcon,
     title: "Sign & celebrate",
     detail:
-      "Accepting opens a real signature pad. One confirm later — confetti, a signed record, and a clear “what happens next”.",
+      "Accepting opens a real signature pad. One confirm later — confetti, a signed record, and clear next steps.",
   },
   {
+    icon: ChartIcon,
     title: "Owner analytics",
     detail:
-      "Every view, section read and option toggle per deal. A flame badge tells you when a client keeps coming back.",
+      "Every view, section read, question and toggle per deal. A flame badge shows when a client keeps coming back.",
   },
   {
+    icon: LayersIcon,
     title: "Deal editor",
     detail:
-      "Compose proposals in the dashboard: scope, add-ons, milestones, intro video. Copy the share link and send.",
+      "Compose proposals with a live preview: outcomes, scope, add-ons, roadmap, expiry date and brand accent.",
   },
   {
+    icon: CubeIcon,
     title: "Simple stack",
     detail:
       "React + Express + your own free Supabase. All data flows through the API — no client-side keys, no lock-in.",
   },
 ];
-
-/** The real configurator components, running on sample numbers. */
-function MiniConfigurator() {
-  const [dashboard, setDashboard] = useState(true);
-  const [loyalty, setLoyalty] = useState(false);
-
-  const totalCents = 1080000 + (dashboard ? 220000 : 0) + (loyalty ? 140000 : 0);
-  const totalWeeks = 7 + (dashboard ? 2 : 0) + (loyalty ? 1 : 0);
-  const animatedCents = useAnimatedNumber(totalCents);
-  const animatedWeeks = useAnimatedNumber(totalWeeks);
-
-  return (
-    <div className="card relative p-6 md:p-7">
-      <span className="absolute -top-3 left-6 rounded-full bg-ember px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-        Try me
-      </span>
-      <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-        Total investment
-      </p>
-      <p className="mt-1 font-display text-4xl font-semibold tabular-nums tracking-tight">
-        {formatMoney(Math.round(animatedCents / 100) * 100, "USD")}
-      </p>
-      <p className="mt-1 text-sm text-ink-faint">
-        Timeline: <span className="font-semibold text-ink">{formatWeeks(Math.round(animatedWeeks))}</span>
-      </p>
-      <div className="mt-5 space-y-3 border-t border-ink/10 pt-5">
-        {[
-          {
-            name: "Admin Dashboard",
-            meta: "+$2,200 · +2 weeks",
-            on: dashboard,
-            toggle: () => setDashboard((v) => !v),
-          },
-          {
-            name: "Loyalty Program Module",
-            meta: "+$1,400 · +1 week",
-            on: loyalty,
-            toggle: () => setLoyalty((v) => !v),
-          },
-        ].map((row) => (
-          <div
-            key={row.name}
-            className={`flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-colors ${
-              row.on ? "border-ember bg-ember-soft/50" : "border-ink/10"
-            }`}
-          >
-            <div>
-              <p className="text-sm font-semibold">{row.name}</p>
-              <p className="text-xs font-medium text-ember-deep">{row.meta}</p>
-            </div>
-            <Toggle on={row.on} onToggle={row.toggle} label={`Include ${row.name}`} />
-          </div>
-        ))}
-      </div>
-      <p className="mt-4 text-xs text-ink-faint">
-        This is the real component your clients get — see it in a{" "}
-        <Link to="/deal/greencafe-mobile-app" className="font-semibold text-ember-deep hover:underline">
-          full proposal
-        </Link>
-        .
-      </p>
-    </div>
-  );
-}
 
 export default function Landing() {
   return (
@@ -152,7 +101,7 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero with live mini demo */}
+      {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-16 pt-14 md:pt-20">
         <div
           aria-hidden
@@ -163,7 +112,7 @@ export default function Landing() {
           className="ambient-blob pointer-events-none absolute bottom-[-30%] left-[-6%] h-80 w-80 rounded-full bg-amber-200/40 blur-3xl"
           style={{ animationDelay: "-9s" }}
         />
-        <div className="relative mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -207,33 +156,27 @@ export default function Landing() {
               </motion.span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Clients build their package, watch the price update live, and sign on the spot.
-              No PDFs.
+              Instead of a PDF, your client gets a page they can play with: pick add-ons, watch the
+              price react, ask questions, and sign on the spot.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/deal/greencafe-mobile-app" className="btn-primary !px-7 !py-3.5">
+              <Link to="/dashboard/new" className="btn-primary !px-7 !py-3.5">
+                <PlusIcon className="h-4 w-4" />
+                Create a proposal
+              </Link>
+              <Link to="/deal/greencafe-mobile-app" className="btn-ghost !px-6 !py-3">
+                <EyeIcon className="h-4 w-4" />
                 See a live proposal
               </Link>
-              <Link to="/dashboard" className="btn-ghost !px-6 !py-3">
-                Open the dashboard
-              </Link>
-            </div>
-            <div className="mt-10 flex flex-wrap items-center gap-2 text-ink-faint">
-              {(["draft", "sent", "viewed", "accepted"] as const).map((s, i) => (
-                <span key={s} className="flex items-center gap-2">
-                  {i > 0 && <span className="h-px w-4 bg-ink/20" />}
-                  <StatusBadge status={s} />
-                </span>
-              ))}
             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
-            <MiniConfigurator />
+            <HeroShowcase />
           </motion.div>
         </div>
       </section>
@@ -301,7 +244,7 @@ export default function Landing() {
       </section>
 
       {/* Feature grid */}
-      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
+      <section className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="max-w-2xl">
             <p className="eyebrow">What's inside</p>
@@ -315,9 +258,13 @@ export default function Landing() {
                 key={f.title}
                 {...fadeUp}
                 transition={{ ...fadeUp.transition, delay: (i % 3) * 0.06 }}
-                className="card p-6"
+                className="card group relative overflow-hidden p-6 transition-all hover:-translate-y-1 hover:shadow-pop"
               >
-                <h3 className="font-display text-lg font-semibold">{f.title}</h3>
+                <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-ember transition-transform duration-300 group-hover:scale-x-100" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ember-soft text-ember-deep transition-colors duration-300 group-hover:bg-ember group-hover:text-white">
+                  <f.icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.detail}</p>
               </motion.div>
             ))}
@@ -326,7 +273,7 @@ export default function Landing() {
       </section>
 
       {/* Analytics teaser */}
-      <section className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
+      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
         <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2">
           <motion.div {...fadeUp}>
             <p className="eyebrow">Know where you stand</p>
@@ -334,8 +281,8 @@ export default function Landing() {
               Stop wondering if they opened it
             </h2>
             <p className="mt-4 leading-relaxed text-ink-soft">
-              Every proposal page reports back: page views, which sections got read, and which
-              add-ons the client kept toggling. Follow up at exactly the right moment.
+              Every proposal page reports back: page views, which sections got read, questions asked,
+              and which add-ons the client kept toggling. Follow up at exactly the right moment.
             </p>
             <Link to="/dashboard" className="btn-ghost mt-6">
               Explore the dashboard
@@ -351,13 +298,13 @@ export default function Landing() {
                 <EyeIcon className="h-4 w-4 text-ink-faint" /> 5 views
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-ember-soft px-2.5 py-0.5 text-xs font-semibold text-ember-deep">
-                <FlameIcon className="h-3.5 w-3.5" /> viewed 5 times
+                <FlameIcon className="flame-flicker h-3.5 w-3.5" /> viewed 5 times
               </span>
             </div>
             <div className="mt-5 space-y-3 border-t border-ink/5 pt-4">
               {[
+                ["Asked about the Admin Dashboard", "2d ago"],
                 ["Toggled “Loyalty Program Module” on", "2d ago"],
-                ["Read the “pricing” section", "2d ago"],
                 ["Opened the proposal", "1h ago"],
               ].map(([label, time]) => (
                 <div key={label} className="flex items-center gap-3 text-sm">
@@ -371,57 +318,63 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How to remix */}
-      <section className="border-t border-ink/5 px-6 py-16 md:py-20">
-        <div className="mx-auto max-w-3xl">
-          <motion.div {...fadeUp} className="rounded-3xl bg-ink p-8 text-cream md:p-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ember">
-              Make it yours
-            </p>
-            <h2 className="mt-3 font-display text-3xl font-semibold">Remix in minutes</h2>
-            <ol className="mt-6 space-y-4">
-              {[
-                ["Remix this template", "Everything runs on one port — no extra services to wire up."],
-                ["Connect a free Supabase project", "Paste schema.sql, add two keys. Demo deals included."],
-                ["Send your first deal link", "Create a proposal in the dashboard and share /deal/your-slug."],
-              ].map(([title, detail], i) => (
-                <li key={title} className="flex gap-4">
-                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-ember text-sm font-bold text-white">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="font-semibold">{title}</p>
-                    <p className="text-sm text-cream/60">{detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-8 flex flex-wrap gap-4 text-sm">
-              <Link to="/design" className="font-semibold text-cream underline underline-offset-4 decoration-ember hover:decoration-cream">
-                Browse the design system
+      {/* Footer */}
+      <footer className="border-t border-ink/10 bg-cream-deep/70">
+        <div className="mx-auto max-w-5xl px-6 pb-8 pt-14">
+          <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr]">
+            <div>
+              <Link to="/" className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-ember font-display text-base font-bold text-white">
+                  D
+                </span>
+                <span className="font-display text-lg font-semibold tracking-tight">Deal Room</span>
+              </Link>
+              <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
+                Interactive proposal pages for freelancers & agencies. Send a deal room, not a PDF.
+              </p>
+              <Link to="/dashboard/new" className="btn-primary mt-5 !px-5 !py-2.5 !text-xs">
+                <PlusIcon className="h-3.5 w-3.5" />
+                Create a proposal
               </Link>
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <footer className="border-t border-ink/5 px-6 py-8">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-xs text-ink-faint">
-          <span>
-            <span className="font-semibold text-ink-soft">Deal Room</span> — proposals clients can
-            say yes to.
-          </span>
-          <span className="flex items-center gap-4">
-            <Link to="/design" className="hover:text-ink">
-              Design system
-            </Link>
-            <Link to="/deal/greencafe-mobile-app" className="hover:text-ink">
-              Demo proposal
-            </Link>
-            <Link to="/dashboard" className="hover:text-ink">
-              Dashboard
-            </Link>
-          </span>
+            {[
+              {
+                title: "Demo proposals",
+                links: [
+                  ["App development", "/deal/greencafe-mobile-app"],
+                  ["Motion design", "/deal/pulse-brand-motion"],
+                  ["Web design", "/deal/nordic-yoga-landing"],
+                ],
+              },
+              {
+                title: "Workspace",
+                links: [
+                  ["Dashboard", "/dashboard"],
+                  ["New deal", "/dashboard/new"],
+                  ["Design system", "/design"],
+                ],
+              },
+            ].map((col) => (
+              <div key={col.title}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                  {col.title}
+                </p>
+                <ul className="mt-3.5 space-y-2.5">
+                  {col.links.map(([label, to]) => (
+                    <li key={to}>
+                      <Link to={to} className="text-sm font-medium text-ink-soft transition hover:text-ember-deep">
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-ink/10 pt-6 text-xs text-ink-faint">
+            <span>© {new Date().getFullYear()} Deal Room</span>
+            <span className="font-medium">Offers so good, saying no feels stupid.</span>
+          </div>
         </div>
       </footer>
     </div>

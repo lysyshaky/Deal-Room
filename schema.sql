@@ -6,6 +6,7 @@
 
 create extension if not exists pgcrypto;
 
+drop table if exists public.comments cascade;
 drop table if exists public.events cascade;
 drop table if exists public.milestones cascade;
 drop table if exists public.options cascade;
@@ -23,6 +24,8 @@ create table public.deals (
   outcomes           text[] not null default '{}',
   project_type       text not null default 'other'
                      check (project_type in ('mobile', 'web', 'motion', 'branding', 'uxui', 'other')),
+  valid_until        timestamptz,
+  accent_color       text,
   currency           text not null default 'USD',
   status             text not null default 'draft'
                      check (status in ('draft', 'sent', 'viewed', 'accepted')),
@@ -55,15 +58,26 @@ create table public.milestones (
   sort_order   integer not null default 0
 );
 
+-- Questions & replies on a proposal (client asks, owner answers).
+create table public.comments (
+  id          uuid primary key default gen_random_uuid(),
+  deal_id     uuid not null references public.deals(id) on delete cascade,
+  author_name text not null,
+  author_role text not null default 'client' check (author_role in ('client', 'owner')),
+  body        text not null,
+  created_at  timestamptz not null default now()
+);
+
 -- Client activity captured from the public proposal page.
 create table public.events (
   id         uuid primary key default gen_random_uuid(),
   deal_id    uuid not null references public.deals(id) on delete cascade,
-  type       text not null check (type in ('view', 'section_view', 'option_toggle', 'accept')),
+  type       text not null check (type in ('view', 'section_view', 'option_toggle', 'accept', 'comment')),
   meta       jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
 
+create index comments_deal_id_idx on public.comments (deal_id);
 create index options_deal_id_idx on public.options (deal_id);
 create index milestones_deal_id_idx on public.milestones (deal_id);
 create index events_deal_id_idx on public.events (deal_id);
@@ -74,7 +88,7 @@ create index events_deal_id_idx on public.events (deal_id);
 
 -- Deal 1: a realistic proposal that has already been sent & viewed
 -- (video_url points at the demo video bundled with the template in client/public)
-insert into public.deals (id, slug, title, client_name, client_company, intro, video_url, outcomes, project_type, currency, status) values (
+insert into public.deals (id, slug, title, client_name, client_company, intro, video_url, outcomes, project_type, valid_until, currency, status) values (
   '11111111-1111-1111-1111-111111111111',
   'greencafe-mobile-app',
   'Mobile App for GreenCafe',
@@ -88,9 +102,18 @@ insert into public.deals (id, slug, title, client_name, client_company, intro, v
     'GreenCafe live on the App Store and Google Play in nine weeks'
   ],
   'mobile',
+  now() + interval '14 days',
   'USD',
   'sent'
 );
+
+insert into public.comments (deal_id, author_name, author_role, body, created_at) values
+  ('11111111-1111-1111-1111-111111111111', 'Sarah Mitchell', 'client',
+   'Quick one — does the Admin Dashboard include staff accounts with different permission levels?',
+   now() - interval '2 days' + interval '6 minutes'),
+  ('11111111-1111-1111-1111-111111111111', 'Alex', 'owner',
+   'Yes — owner and staff roles are included out of the box. More granular permissions are an easy later add.',
+   now() - interval '1 day' + interval '3 hours');
 
 insert into public.options (deal_id, name, description, price_cents, weeks, kind, default_selected, sort_order) values
   ('11111111-1111-1111-1111-111111111111', 'Discovery & UX',
@@ -134,6 +157,7 @@ insert into public.events (deal_id, type, meta, created_at) values
   ('11111111-1111-1111-1111-111111111111', 'option_toggle', '{"option_name": "3-Month Support", "selected": true}', now() - interval '2 days' + interval '5 minutes'),
   ('11111111-1111-1111-1111-111111111111', 'view', '{}', now() - interval '1 day'),
   ('11111111-1111-1111-1111-111111111111', 'section_view', '{"section": "timeline"}', now() - interval '1 day' + interval '2 minutes'),
+  ('11111111-1111-1111-1111-111111111111', 'comment', '{"author_name": "Sarah Mitchell"}', now() - interval '2 days' + interval '6 minutes'),
   ('11111111-1111-1111-1111-111111111111', 'view', '{}', now() - interval '6 hours'),
   ('11111111-1111-1111-1111-111111111111', 'view', '{}', now() - interval '1 hour');
 
@@ -178,7 +202,7 @@ insert into public.milestones (deal_id, title, deliverables, week_start, week_le
    1, 1, 1);
 
 -- Deal 3: a motion / animation project, sent & getting attention
-insert into public.deals (id, slug, title, client_name, client_company, intro, outcomes, project_type, currency, status) values (
+insert into public.deals (id, slug, title, client_name, client_company, intro, outcomes, project_type, valid_until, accent_color, currency, status) values (
   '33333333-3333-3333-3333-333333333333',
   'pulse-brand-motion',
   'Brand Motion Package for Pulse Fitness',
@@ -191,6 +215,8 @@ insert into public.deals (id, slug, title, client_name, client_company, intro, o
     'A reusable kit — every future video starts at 80% done'
   ],
   'motion',
+  now() + interval '10 days',
+  '#6D28D9',
   'USD',
   'sent'
 );

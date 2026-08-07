@@ -37,8 +37,8 @@ export function NextSteps() {
   );
 }
 
-function celebrate() {
-  const colors = ["#E4572E", "#F5A623", "#191714", "#FFFFFF"];
+function celebrate(accent = "#E4572E") {
+  const colors = [accent, "#F5A623", "#191714", "#FFFFFF"];
   confetti({ particleCount: 130, spread: 75, origin: { y: 0.6 }, colors });
   setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, colors }), 180);
   setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, colors }), 320);
@@ -50,10 +50,11 @@ interface Props {
   clientName: string;
   totalLabel: string;
   weeksLabel: string;
+  accent?: string;
   onAccept: (signatureDataUrl: string) => Promise<void>;
 }
 
-export default function AcceptModal({ open, onClose, clientName, totalLabel, weeksLabel, onAccept }: Props) {
+export default function AcceptModal({ open, onClose, clientName, totalLabel, weeksLabel, accent, onAccept }: Props) {
   const [phase, setPhase] = useState<"sign" | "done">("sign");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -85,7 +86,7 @@ export default function AcceptModal({ open, onClose, clientName, totalLabel, wee
     try {
       await onAccept(canvas.toDataURL("image/png"));
       setPhase("done");
-      celebrate();
+      celebrate(accent);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong — please try again.");
     } finally {

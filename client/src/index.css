@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Accent palette as RGB triplets — overridable per deal via accent_color */
+    --c-ember: 228 87 46;
+    --c-ember-deep: 198 67 28;
+    --c-ember-soft: 251 234 227;
+  }
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;

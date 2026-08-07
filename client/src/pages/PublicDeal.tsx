@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Deal, DealDetail, Option } from "@shared/schema";
+import type { Comment, Deal, DealDetail, Option } from "@shared/schema";
 import AcceptModal, { NextSteps } from "@/components/deal/AcceptModal";
 import Timeline from "@/components/deal/Timeline";
 import Toggle from "@/components/deal/Toggle";
@@ -11,7 +11,8 @@ import Spinner from "@/components/Spinner";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { useSectionRef } from "@/hooks/useSectionTracker";
 import { api } from "@/lib/api";
-import { formatMoney, formatWeeks, isDirectVideoUrl, toEmbedUrl } from "@/lib/format";
+import { accentVars } from "@/lib/color";
+import { formatMoney, formatWeeks, isDirectVideoUrl, relativeTime, toEmbedUrl } from "@/lib/format";
 import { track, trackOncePerSession } from "@/lib/track";
 
 const fadeUp = {
@@ -27,6 +28,10 @@ export default function PublicDeal() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [modalOpen, setModalOpen] = useState(false);
+  const [qName, setQName] = useState("");
+  const [qBody, setQBody] = useState("");
+  const [qBusy, setQBusy] = useState(false);
+  const [qError, setQError] = useState("");
 
   const scopeRef = useSectionRef(slug, "scope");
   const pricingRef = useSectionRef(slug, "pricing");
@@ -36,6 +41,7 @@ export default function PublicDeal() {
     api<DealDetail>(`/api/public/deals/${slug}`)
       .then((d) => {
         setDeal(d);
+        setQName(d.client_name);
         setSelected(
           new Set(d.options.filter((o) => o.kind === "addon" && o.default_selected).map((o) => o.id))
         );
@@ -64,6 +70,12 @@ export default function PublicDeal() {
   const displayWeeks = formatWeeks(Math.round(animatedWeeks));
 
   const accepted = deal?.status === "accepted";
+  const expired =
+    !accepted && Boolean(deal?.valid_until) && new Date(deal!.valid_until!).getTime() < Date.now();
+  const canAccept = Boolean(deal) && !accepted && !expired;
+  const firstName = deal?.client_name.split(" ")[0] ?? "";
+  const shortDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long" });
 
   function toggleAddon(option: Option) {
     setSelected((prev) => {
@@ -74,6 +86,25 @@ export default function PublicDeal() {
       track(slug, "option_toggle", { option_name: option.name, selected: on });
       return next;
     });
+  }
+
+  async function submitQuestion(e: FormEvent) {
+    e.preventDefault();
+    if (!qBody.trim() || !qName.trim()) return;
+    setQBusy(true);
+    setQError("");
+    try {
+      const comment = await api<Comment>(`/api/public/deals/${slug}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ author_name: qName.trim(), body: qBody.trim() }),
+      });
+      setDeal((d) => (d ? { ...d, comments: [...d.comments, comment] } : d));
+      setQBody("");
+    } catch (err) {
+      setQError(err instanceof Error ? err.message : "Could not send — try again.");
+    } finally {
+      setQBusy(false);
+    }
   }
 
   async function accept(signatureDataUrl: string) {
@@ -109,7 +140,10 @@ export default function PublicDeal() {
   const embedUrl = deal.video_url ? toEmbedUrl(deal.video_url) : null;
 
   return (
-    <div className="min-h-screen bg-cream pb-28 lg:pb-0">
+    <div
+      className="min-h-screen bg-cream pb-28 lg:pb-0"
+      style={deal.accent_color ? accentVars(deal.accent_color) : undefined}
+    >
       {/* Top strip */}
       <header className="sticky top-0 z-40 border-b border-ink/5 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
@@ -127,13 +161,23 @@ export default function PublicDeal() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
               <CheckIcon className="h-3 w-3" /> Accepted
             </span>
-          ) : (
+          ) : canAccept ? (
             <button onClick={() => setModalOpen(true)} className="btn-primary hidden !px-4 !py-1.5 !text-xs lg:inline-flex">
               Accept proposal
             </button>
-          )}
+          ) : null}
         </div>
       </header>
+
+      {expired && deal.valid_until && (
+        <div className="bg-ink px-4 py-2.5 text-center text-sm font-medium text-cream">
+          This proposal expired on {shortDate(deal.valid_until)} —{" "}
+          <a href="#questions" className="font-semibold text-ember underline underline-offset-2">
+            ask for a refreshed one
+          </a>
+          .
+        </div>
+      )}
 
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden px-6 pb-16 pt-14 md:pt-24">
@@ -160,6 +204,11 @@ export default function PublicDeal() {
                 <div className="mt-7 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
                   <CheckIcon className="h-4 w-4" />
                   Accepted on {new Date(deal.accepted_at).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              )}
+              {canAccept && deal.valid_until && (
+                <div className="mt-7 inline-flex items-center gap-2 rounded-full bg-ember-soft px-4 py-2 text-sm font-semibold text-ember-deep">
+                  <span aria-hidden>⏳</span> Price locked until {shortDate(deal.valid_until)}
                 </div>
               )}
             </motion.div>
@@ -395,7 +444,7 @@ export default function PublicDeal() {
                     ))}
                   </AnimatePresence>
                 </ul>
-                {!accepted && (
+                {canAccept && (
                   <button onClick={() => setModalOpen(true)} className="btn-primary mt-6 w-full">
                     Accept proposal
                   </button>
@@ -426,9 +475,83 @@ export default function PublicDeal() {
         </div>
       </section>
 
+      {/* ---------- Questions ---------- */}
+      <section id="questions" className="border-t border-ink/5 bg-cream-deep/60 px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-3xl">
+          <motion.div {...fadeUp}>
+            <p className="eyebrow">Questions?</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">Ask right here</h2>
+            <p className="mt-3 text-ink-soft">
+              No email ping-pong — your question lands straight in the dashboard, and the answer
+              shows up on this page.
+            </p>
+          </motion.div>
+
+          {deal.comments.length > 0 && (
+            <div className="mt-9 space-y-4">
+              {deal.comments.map((c) => {
+                const owner = c.author_role === "owner";
+                return (
+                  <motion.div key={c.id} {...fadeUp} className="flex gap-3">
+                    <span
+                      className={`flex h-9 w-9 flex-none items-center justify-center rounded-full font-display text-xs font-bold ${
+                        owner ? "bg-ember text-white" : "bg-ink text-cream"
+                      }`}
+                    >
+                      {c.author_name
+                        .split(/\s+/)
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()}
+                    </span>
+                    <div className={`min-w-0 flex-1 rounded-2xl px-4 py-3.5 ${owner ? "bg-ember-soft" : "bg-white shadow-card"}`}>
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <span className="text-sm font-semibold">
+                          {c.author_name}
+                          {owner && (
+                            <span className="ml-2 rounded-full bg-ember px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                              Owner
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-xs text-ink-faint">{relativeTime(c.created_at)}</span>
+                      </div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{c.body}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          <motion.form {...fadeUp} onSubmit={submitQuestion} className="card mt-6 p-5 md:p-6">
+            <label className="label">Your question</label>
+            <textarea
+              className="input min-h-[80px]"
+              value={qBody}
+              onChange={(e) => setQBody(e.target.value)}
+              placeholder="Anything unclear about scope, timing or pricing?"
+            />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <input
+                className="input max-w-[220px] !py-2 text-sm"
+                value={qName}
+                onChange={(e) => setQName(e.target.value)}
+                placeholder="Your name"
+              />
+              <button type="submit" className="btn-primary" disabled={qBusy || !qBody.trim() || !qName.trim()}>
+                {qBusy ? "Sending…" : "Send question"}
+              </button>
+            </div>
+            {qError && <p className="mt-2 text-sm font-medium text-ember-deep">{qError}</p>}
+          </motion.form>
+        </div>
+      </section>
+
       {/* ---------- Accept ---------- */}
       <section className="border-t border-ink/5 px-6 py-16 md:py-24">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           {accepted ? (
             <div className="card p-8 md:p-10">
               <p className="eyebrow">All set</p>
@@ -445,25 +568,88 @@ export default function PublicDeal() {
                 <NextSteps />
               </div>
             </div>
-          ) : (
-            <motion.div {...fadeUp} className="rounded-3xl bg-ink p-8 text-cream md:p-12">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ember">
-                Ready when you are
-              </p>
-              <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">
-                Let's make it official
+          ) : expired ? (
+            <div className="card p-8 text-center md:p-10">
+              <p className="eyebrow">Past its date</p>
+              <h2 className="mt-3 font-display text-3xl font-semibold">
+                This proposal has expired
               </h2>
-              <p className="mt-3 max-w-xl leading-relaxed text-cream/70">
-                Your package: <span className="font-semibold text-cream">{displayTotal}</span> over{" "}
-                <span className="font-semibold text-cream">{displayWeeks}</span>. Sign right here — no
-                printing, no PDFs.
+              <p className="mx-auto mt-3 max-w-md leading-relaxed text-ink-soft">
+                Scope and pricing may have shifted since{" "}
+                {deal.valid_until ? shortDate(deal.valid_until) : "then"} — drop a question above and
+                a refreshed version will be on its way.
               </p>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="mt-8 inline-flex items-center justify-center rounded-full bg-ember px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-ember-deep active:scale-[0.98]"
-              >
-                Accept proposal
-              </button>
+              <a href="#questions" className="btn-primary mt-7">
+                Ask for an update
+              </a>
+            </div>
+          ) : (
+            <motion.div
+              {...fadeUp}
+              className="relative overflow-hidden rounded-3xl bg-ink p-8 text-cream md:p-12"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-24 -top-28 h-96 w-96 rounded-full bg-ember/25 blur-3xl"
+              />
+              <div className="relative grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ember">
+                    Ready when you are{firstName ? `, ${firstName}` : ""}
+                  </p>
+                  <h2 className="mt-3 font-display text-3xl font-semibold leading-tight md:text-4xl">
+                    One signature,
+                    <br />
+                    and week 1 begins
+                  </h2>
+                  <p className="mt-4 max-w-md leading-relaxed text-cream/70">
+                    Accept right on this page — the scope locks in as configured, and the kickoff
+                    invite lands in your inbox within 24 hours.
+                  </p>
+                  <div className="mt-8 flex flex-wrap items-center gap-4">
+                    <button
+                      onClick={() => setModalOpen(true)}
+                      className="inline-flex items-center justify-center rounded-full bg-ember px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-ember-deep active:scale-[0.98]"
+                    >
+                      Accept proposal
+                    </button>
+                    <a
+                      href="#questions"
+                      className="text-sm font-semibold text-cream/60 underline-offset-4 transition hover:text-cream hover:underline"
+                    >
+                      Ask a question first
+                    </a>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-cream/15 bg-cream/5 p-6 md:p-7">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-cream/50">
+                    Your package
+                  </p>
+                  <p className="mt-1 font-display text-4xl font-semibold tabular-nums tracking-tight">
+                    {displayTotal}
+                  </p>
+                  <div className="mt-5 space-y-3 border-t border-cream/10 pt-5 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-cream/60">Timeline</span>
+                      <span className="font-semibold">{displayWeeks}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-cream/60">Included</span>
+                      <span className="font-semibold">
+                        {base.length} core · {chosenAddons.length} add-on
+                        {chosenAddons.length === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    {deal.valid_until && (
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-cream/60">Price locked until</span>
+                        <span className="font-semibold text-ember">{shortDate(deal.valid_until)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
         </div>
@@ -477,7 +663,7 @@ export default function PublicDeal() {
       </footer>
 
       {/* Sticky summary bar (mobile) */}
-      {!accepted && (
+      {canAccept && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-cream/95 px-5 py-3 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
             <div>
@@ -505,6 +691,7 @@ export default function PublicDeal() {
         clientName={deal.client_name}
         totalLabel={formatMoney(totalCents, currency)}
         weeksLabel={formatWeeks(totalWeeks)}
+        accent={deal.accent_color ?? undefined}
         onAccept={accept}
       />
     </div>

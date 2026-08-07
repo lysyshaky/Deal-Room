@@ -7,7 +7,11 @@ export default {
       colors: {
         ink: { DEFAULT: "#191714", soft: "#4A453E", faint: "#8A8378" },
         cream: { DEFAULT: "#FAF8F4", deep: "#F1EDE5" },
-        ember: { DEFAULT: "#E4572E", deep: "#C6431C", soft: "#FBEAE3" },
+        ember: {
+          DEFAULT: "rgb(var(--c-ember) / <alpha-value>)",
+          deep: "rgb(var(--c-ember-deep) / <alpha-value>)",
+          soft: "rgb(var(--c-ember-soft) / <alpha-value>)",
+        },
       },
       fontFamily: {
         display: ["Fraunces", "Georgia", "serif"],

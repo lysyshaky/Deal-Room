@@ -9,6 +9,7 @@ import DealAnalytics from "@/pages/DealAnalytics";
 import DealEditor from "@/pages/DealEditor";
 import DesignSystem from "@/pages/DesignSystem";
 import Landing from "@/pages/Landing";
+import NotFound from "@/pages/NotFound";
 import PublicDeal from "@/pages/PublicDeal";
 
 function Admin({ config, children }: { config: AppConfig; children: ReactNode }) {
@@ -74,7 +75,7 @@ export default function App() {
           }
         />
         <Route path="/deal/:slug" element={<PublicDeal />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

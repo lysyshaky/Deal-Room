@@ -1,6 +1,6 @@
 import type { Express, NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-import { acceptInputSchema, dealInputSchema, eventInputSchema } from "../shared/schema";
+import { acceptInputSchema, commentInputSchema, dealInputSchema, eventInputSchema } from "../shared/schema";
 import { getSupabase, isConfigured } from "./supabase";
 
 type Handler = (req: Request, res: Response) => Promise<void> | void;
@@ -110,13 +110,47 @@ export function registerRoutes(app: Express) {
         res.status(404).json({ error: "Deal not found" });
         return;
       }
-      const [options, milestones] = await Promise.all([
+      const [options, milestones, comments] = await Promise.all([
         sb.from("options").select("*").eq("deal_id", deal.id).order("sort_order"),
         sb.from("milestones").select("*").eq("deal_id", deal.id).order("sort_order"),
+        sb.from("comments").select("*").eq("deal_id", deal.id).order("created_at"),
       ]);
       if (options.error) throw options.error;
       if (milestones.error) throw milestones.error;
-      res.json({ ...deal, options: options.data ?? [], milestones: milestones.data ?? [] });
+      if (comments.error) throw comments.error;
+      res.json({
+        ...deal,
+        options: options.data ?? [],
+        milestones: milestones.data ?? [],
+        comments: comments.data ?? [],
+      });
+    })
+  );
+
+  app.post(
+    "/api/deals/:id/comments",
+    requireConfigured,
+    requireAdmin,
+    wrap(async (req, res) => {
+      const input = commentInputSchema.parse(req.body);
+      const sb = getSupabase();
+      const { data: deal, error } = await sb
+        .from("deals")
+        .select("id")
+        .eq("id", req.params.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!deal) {
+        res.status(404).json({ error: "Deal not found" });
+        return;
+      }
+      const { data: comment, error: insErr } = await sb
+        .from("comments")
+        .insert({ deal_id: deal.id, author_name: input.author_name, author_role: "owner", body: input.body })
+        .select()
+        .single();
+      if (insErr) throw insErr;
+      res.status(201).json(comment);
     })
   );
 
@@ -280,19 +314,55 @@ export function registerRoutes(app: Express) {
         return;
       }
 
-      const [options, milestones] = await Promise.all([
+      const [options, milestones, comments] = await Promise.all([
         sb.from("options").select("*").eq("deal_id", deal.id).order("sort_order"),
         sb.from("milestones").select("*").eq("deal_id", deal.id).order("sort_order"),
+        sb.from("comments").select("*").eq("deal_id", deal.id).order("created_at"),
       ]);
       if (options.error) throw options.error;
       if (milestones.error) throw milestones.error;
+      if (comments.error) throw comments.error;
 
       if (deal.status === "sent") {
         const { error: updErr } = await sb.from("deals").update({ status: "viewed" }).eq("id", deal.id);
         if (!updErr) deal.status = "viewed";
       }
 
-      res.json({ ...deal, options: options.data ?? [], milestones: milestones.data ?? [] });
+      res.json({
+        ...deal,
+        options: options.data ?? [],
+        milestones: milestones.data ?? [],
+        comments: comments.data ?? [],
+      });
+    })
+  );
+
+  app.post(
+    "/api/public/deals/:slug/comments",
+    requireConfigured,
+    wrap(async (req, res) => {
+      const input = commentInputSchema.parse(req.body);
+      const sb = getSupabase();
+      const { data: deal, error } = await sb
+        .from("deals")
+        .select("id")
+        .eq("slug", req.params.slug)
+        .maybeSingle();
+      if (error) throw error;
+      if (!deal) {
+        res.status(404).json({ error: "Proposal not found" });
+        return;
+      }
+      const { data: comment, error: insErr } = await sb
+        .from("comments")
+        .insert({ deal_id: deal.id, author_name: input.author_name, author_role: "client", body: input.body })
+        .select()
+        .single();
+      if (insErr) throw insErr;
+      await sb
+        .from("events")
+        .insert({ deal_id: deal.id, type: "comment", meta: { author_name: input.author_name } });
+      res.status(201).json(comment);
     })
   );
 

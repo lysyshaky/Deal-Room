@@ -50,6 +50,18 @@ export const dealInputSchema = z.object({
     .transform((v) => (v ? v : null)),
   outcomes: z.array(z.string()).default([]),
   project_type: z.enum(PROJECT_TYPES).default("other"),
+  valid_until: z
+    .union([z.string().min(1), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  accent_color: z
+    .union([
+      z.string().regex(/^#[0-9a-fA-F]{6}$/, "Accent must be a hex color like #E4572E"),
+      z.literal(""),
+      z.null(),
+    ])
+    .optional()
+    .transform((v) => (v ? v : null)),
   currency: z.string().length(3, "Currency must be a 3-letter code").default("USD"),
   status: z.enum(DEAL_STATUSES).default("draft"),
   options: z.array(optionInputSchema).default([]),
@@ -61,6 +73,11 @@ export type DealInput = z.infer<typeof dealInputSchema>;
 export const eventInputSchema = z.object({
   type: z.enum(["view", "section_view", "option_toggle", "accept"]),
   meta: z.record(z.unknown()).default({}),
+});
+
+export const commentInputSchema = z.object({
+  author_name: z.string().min(1, "Name is required").max(80),
+  body: z.string().min(1, "Message is required").max(2000),
 });
 
 export const acceptInputSchema = z.object({
@@ -102,6 +119,8 @@ export interface Deal {
   video_url: string | null;
   outcomes: string[];
   project_type: ProjectType;
+  valid_until: string | null;
+  accent_color: string | null;
   currency: string;
   status: DealStatus;
   signature_data_url: string | null;
@@ -115,15 +134,25 @@ export interface DealSummary extends Deal {
   last_event_at: string | null;
 }
 
+export interface Comment {
+  id: string;
+  deal_id: string;
+  author_name: string;
+  author_role: "client" | "owner";
+  body: string;
+  created_at: string;
+}
+
 export interface DealDetail extends Deal {
   options: Option[];
   milestones: Milestone[];
+  comments: Comment[];
 }
 
 export interface EventRow {
   id: string;
   deal_id: string;
-  type: "view" | "section_view" | "option_toggle" | "accept";
+  type: "view" | "section_view" | "option_toggle" | "accept" | "comment";
   meta: Record<string, unknown>;
   created_at: string;
 }

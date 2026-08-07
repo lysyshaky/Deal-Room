@@ -68,6 +68,52 @@ export function ChartIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+export function SlidersIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" />
+      <path d="M1 14h6M9 8h6M17 16h6" />
+    </svg>
+  );
+}
+
+export function RouteIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="19" r="3" />
+      <circle cx="18" cy="5" r="3" />
+      <path d="M12 19h4.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H12" />
+    </svg>
+  );
+}
+
+export function FeatherIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.2 3.8a6 6 0 0 0-8.5 0L5 10.5V19h8.5l6.7-6.7a6 6 0 0 0 0-8.5Z" />
+      <path d="M16 8 2 22M17.5 15H9" />
+    </svg>
+  );
+}
+
+export function LayersIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 2 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5M3 17l9 5 9-5" />
+    </svg>
+  );
+}
+
+export function CubeIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 8v8l-9 5-9-5V8l9-5 9 5Z" />
+      <path d="m3.3 7.3 8.7 4.7 8.7-4.7M12 22V12" />
+    </svg>
+  );
+}
+
 export function PencilIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

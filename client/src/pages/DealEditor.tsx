@@ -132,6 +132,8 @@ export default function DealEditor() {
     outcomes: "",
     video_url: "",
     project_type: "other" as ProjectType,
+    valid_until: "",
+    accent_color: "",
     currency: "USD",
     status: "draft" as DealStatus,
   });
@@ -151,6 +153,8 @@ export default function DealEditor() {
           outcomes: d.outcomes.join("\n"),
           video_url: d.video_url ?? "",
           project_type: d.project_type,
+          valid_until: d.valid_until ? d.valid_until.slice(0, 10) : "",
+          accent_color: d.accent_color ?? "",
           currency: d.currency,
           status: d.status,
         });
@@ -217,6 +221,8 @@ export default function DealEditor() {
     const payload = {
       ...form,
       video_url: form.video_url.trim() || null,
+      valid_until: form.valid_until || null,
+      accent_color: form.accent_color || null,
       outcomes: form.outcomes
         .split("\n")
         .map((s) => s.trim())
@@ -408,6 +414,41 @@ export default function DealEditor() {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="label">Brand accent (optional)</label>
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="color"
+                    value={form.accent_color || "#E4572E"}
+                    onChange={(e) => setForm((f) => ({ ...f, accent_color: e.target.value }))}
+                    className="h-10 w-14 cursor-pointer rounded-lg border border-ink/15 bg-white p-1"
+                    title="Pick the client's brand color"
+                  />
+                  {form.accent_color ? (
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-ink-faint hover:text-ink"
+                      onClick={() => setForm((f) => ({ ...f, accent_color: "" }))}
+                    >
+                      Reset to default
+                    </button>
+                  ) : (
+                    <span className="text-xs text-ink-faint">Recolors the whole proposal page</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="label">Valid until (optional)</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={form.valid_until}
+                  onChange={setField("valid_until")}
+                />
+                <p className="mt-1 text-xs text-ink-faint">
+                  Shows "price locked until" — after this date accepting is disabled.
+                </p>
               </div>
             </div>
           </SectionCard>
