@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { DealDetail, DealStatus } from "@shared/schema";
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, type DealDetail, type DealStatus, type ProjectType } from "@shared/schema";
 import AdminShell from "@/components/AdminShell";
 import { ArrowLeftIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
@@ -66,7 +66,9 @@ export default function DealEditor() {
     client_name: "",
     client_company: "",
     intro: "",
+    outcomes: "",
     video_url: "",
+    project_type: "other" as ProjectType,
     currency: "USD",
     status: "draft" as DealStatus,
   });
@@ -83,7 +85,9 @@ export default function DealEditor() {
           client_name: d.client_name,
           client_company: d.client_company,
           intro: d.intro,
+          outcomes: d.outcomes.join("\n"),
           video_url: d.video_url ?? "",
+          project_type: d.project_type,
           currency: d.currency,
           status: d.status,
         });
@@ -138,6 +142,10 @@ export default function DealEditor() {
     const payload = {
       ...form,
       video_url: form.video_url.trim() || null,
+      outcomes: form.outcomes
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
       options: options
         .filter((o) => o.name.trim())
         .map((o, i) => ({
@@ -255,6 +263,17 @@ export default function DealEditor() {
               <input className="input" value={form.client_company} onChange={setField("client_company")} placeholder="GreenCafe" />
             </div>
             <div>
+              <label className="label">Project type</label>
+              <select className="input" value={form.project_type} onChange={setField("project_type")}>
+                {PROJECT_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {PROJECT_TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-ink-faint">Drives the animated hero on the proposal.</p>
+            </div>
+            <div>
               <label className="label">Currency</label>
               <select className="input" value={form.currency} onChange={setField("currency")}>
                 {CURRENCIES.map((c) => (
@@ -276,6 +295,18 @@ export default function DealEditor() {
                 onChange={setField("intro")}
                 placeholder="A personal note to open the proposal…"
               />
+            </div>
+            <div className="md:col-span-2">
+              <label className="label">Client outcomes (one per line)</label>
+              <textarea
+                className="input min-h-[90px]"
+                value={form.outcomes}
+                onChange={setField("outcomes")}
+                placeholder={"Customers order ahead and skip the line\nYour team updates the menu without a developer"}
+              />
+              <p className="mt-1 text-xs text-ink-faint">
+                Shown as "what you get out of it" — results, not deliverables.
+              </p>
             </div>
           </div>
         </section>

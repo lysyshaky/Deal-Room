@@ -5,6 +5,7 @@ import type { Deal, DealDetail, Option } from "@shared/schema";
 import AcceptModal, { NextSteps } from "@/components/deal/AcceptModal";
 import Timeline from "@/components/deal/Timeline";
 import Toggle from "@/components/deal/Toggle";
+import TypeVisual from "@/components/deal/TypeVisual";
 import { CheckIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
@@ -136,31 +137,44 @@ export default function PublicDeal() {
           aria-hidden
           className="ambient-blob pointer-events-none absolute -top-20 right-[-10%] h-96 w-96 rounded-full bg-ember/10 blur-3xl"
         />
-        <div className="relative mx-auto max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-            <p className="eyebrow">
-              {deal.title}
-              {deal.client_company ? ` · ${deal.client_company}` : ""}
-            </p>
-            <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight md:text-6xl">
-              A proposal for
-              <br />
-              <span className="text-ember">{deal.client_name}</span>
-            </h1>
-            {deal.intro && (
-              <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ink-soft">{deal.intro}</p>
-            )}
-          </motion.div>
+        <div className="relative mx-auto max-w-5xl">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+              <p className="eyebrow">
+                {deal.title}
+                {deal.client_company ? ` · ${deal.client_company}` : ""}
+              </p>
+              <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight md:text-6xl">
+                A proposal for
+                <br />
+                <span className="text-ember">{deal.client_name}</span>
+              </h1>
+              {deal.intro && (
+                <p className="mt-7 max-w-2xl text-lg leading-relaxed text-ink-soft">{deal.intro}</p>
+              )}
+              {accepted && deal.accepted_at && (
+                <div className="mt-7 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
+                  <CheckIcon className="h-4 w-4" />
+                  Accepted on {new Date(deal.accepted_at).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              )}
+            </motion.div>
 
-          {accepted && deal.accepted_at && (
-            <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
-              <CheckIcon className="h-4 w-4" />
-              Accepted on {new Date(deal.accepted_at).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
-            </div>
-          )}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.93 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="h-60 md:h-72"
+            >
+              <TypeVisual type={deal.project_type} />
+            </motion.div>
+          </div>
 
           {deal.video_url && embedUrl && (
-            <motion.div {...fadeUp} className="mt-10 overflow-hidden rounded-2xl bg-ink shadow-card">
+            <motion.div
+              {...fadeUp}
+              className="mx-auto mt-12 max-w-3xl overflow-hidden rounded-2xl bg-ink shadow-card"
+            >
               {isDirectVideoUrl(deal.video_url) ? (
                 <video src={deal.video_url} controls playsInline className="aspect-video w-full" />
               ) : (
@@ -176,6 +190,36 @@ export default function PublicDeal() {
           )}
         </div>
       </section>
+
+      {/* ---------- Outcomes ---------- */}
+      {deal.outcomes.length > 0 && (
+        <section className="border-t border-ink/5 px-6 py-16 md:py-20">
+          <div className="mx-auto max-w-5xl">
+            <motion.div {...fadeUp} className="max-w-3xl">
+              <p className="eyebrow">Why this matters</p>
+              <h2 className="mt-3 font-display text-3xl font-semibold md:text-4xl">
+                What {deal.client_company || "you"} get{deal.client_company ? "s" : ""} out of it
+              </h2>
+            </motion.div>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {deal.outcomes.map((outcome, i) => (
+                <motion.div
+                  key={outcome}
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: i * 0.08 }}
+                  className="card relative overflow-hidden p-6 md:p-7"
+                >
+                  <span className="absolute inset-x-0 top-0 h-1 bg-ember" />
+                  <p className="font-display text-lg font-semibold text-ink/25">
+                    {String(i + 1).padStart(2, "0")}
+                  </p>
+                  <p className="mt-3 font-display text-xl font-semibold leading-snug">{outcome}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------- Scope ---------- */}
       <section ref={scopeRef} className="border-t border-ink/5 px-6 py-16 md:py-20">

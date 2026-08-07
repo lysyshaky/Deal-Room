@@ -125,7 +125,7 @@ function MiniConfigurator() {
         ))}
       </div>
       <p className="mt-4 text-xs text-ink-faint">
-        ↑ This is the real component your clients get — see it in a{" "}
+        This is the real component your clients get — see it in a{" "}
         <Link to="/deal/greencafe-mobile-app" className="font-semibold text-ember-deep hover:underline">
           full proposal
         </Link>
@@ -171,11 +171,44 @@ export default function Landing() {
           >
             <p className="eyebrow">For freelancers & agencies</p>
             <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight md:text-6xl">
-              Send proposals clients can <span className="text-ember">say yes</span> to
+              {["Offers", "so", "good,"].map((word, i) => (
+                <motion.span
+                  key={word}
+                  initial={{ opacity: 0, y: 26 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.07, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className="mr-[0.28em] inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
+              <motion.span
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.36, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="relative mr-[0.28em] inline-block text-ember"
+              >
+                saying no
+                <motion.span
+                  aria-hidden
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.85, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute -bottom-1.5 left-0 h-[0.09em] w-full origin-left rounded-full bg-ember/50"
+                />
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.43, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-block"
+              >
+                feels stupid
+              </motion.span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Replace static PDFs with an interactive deal page: clients build their own package,
-              explore the timeline, and sign right there — while you watch it happen.
+              Clients build their package, watch the price update live, and sign on the spot.
+              No PDFs.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link to="/deal/greencafe-mobile-app" className="btn-primary !px-7 !py-3.5">
@@ -188,7 +221,7 @@ export default function Landing() {
             <div className="mt-10 flex flex-wrap items-center gap-2 text-ink-faint">
               {(["draft", "sent", "viewed", "accepted"] as const).map((s, i) => (
                 <span key={s} className="flex items-center gap-2">
-                  {i > 0 && <span className="text-ink/20">→</span>}
+                  {i > 0 && <span className="h-px w-4 bg-ink/20" />}
                   <StatusBadge status={s} />
                 </span>
               ))}
@@ -233,8 +266,8 @@ export default function Landing() {
                     {demo.title}
                   </h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-soft">{demo.blurb}</p>
-                  <p className="mt-4 text-sm font-semibold text-ember-deep">
-                    Open proposal <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  <p className="mt-4 text-sm font-semibold text-ember-deep underline-offset-4 transition-all group-hover:underline">
+                    Open proposal
                   </p>
                 </Link>
               </motion.div>
@@ -364,8 +397,8 @@ export default function Landing() {
               ))}
             </ol>
             <div className="mt-8 flex flex-wrap gap-4 text-sm">
-              <Link to="/design" className="font-semibold text-cream underline-offset-4 hover:underline">
-                Browse the design system →
+              <Link to="/design" className="font-semibold text-cream underline underline-offset-4 decoration-ember hover:decoration-cream">
+                Browse the design system
               </Link>
             </div>
           </motion.div>

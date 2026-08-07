@@ -3,6 +3,18 @@ import { z } from "zod";
 export const DEAL_STATUSES = ["draft", "sent", "viewed", "accepted"] as const;
 export type DealStatus = (typeof DEAL_STATUSES)[number];
 
+export const PROJECT_TYPES = ["mobile", "web", "motion", "branding", "uxui", "other"] as const;
+export type ProjectType = (typeof PROJECT_TYPES)[number];
+
+export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  mobile: "Mobile app",
+  web: "Website",
+  motion: "Motion & animation",
+  branding: "Branding",
+  uxui: "UX / UI design",
+  other: "Other",
+};
+
 // ---------- Input schemas (validated on the API) ----------
 
 export const optionInputSchema = z.object({
@@ -36,6 +48,8 @@ export const dealInputSchema = z.object({
     .union([z.string().url("Video URL must be a valid URL"), z.literal(""), z.null()])
     .optional()
     .transform((v) => (v ? v : null)),
+  outcomes: z.array(z.string()).default([]),
+  project_type: z.enum(PROJECT_TYPES).default("other"),
   currency: z.string().length(3, "Currency must be a 3-letter code").default("USD"),
   status: z.enum(DEAL_STATUSES).default("draft"),
   options: z.array(optionInputSchema).default([]),
@@ -86,6 +100,8 @@ export interface Deal {
   client_company: string;
   intro: string;
   video_url: string | null;
+  outcomes: string[];
+  project_type: ProjectType;
   currency: string;
   status: DealStatus;
   signature_data_url: string | null;
@@ -95,6 +111,8 @@ export interface Deal {
 
 export interface DealSummary extends Deal {
   view_count: number;
+  total_cents: number;
+  last_event_at: string | null;
 }
 
 export interface DealDetail extends Deal {

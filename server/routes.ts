@@ -62,16 +62,35 @@ export function registerRoutes(app: Express) {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      const { data: views, error: viewsError } = await sb
-        .from("events")
-        .select("deal_id")
-        .eq("type", "view");
-      if (viewsError) throw viewsError;
+      const [events, options] = await Promise.all([
+        sb.from("events").select("deal_id, type, created_at").order("created_at", { ascending: false }),
+        sb.from("options").select("deal_id, price_cents, kind, default_selected"),
+      ]);
+      if (events.error) throw events.error;
+      if (options.error) throw options.error;
 
-      const counts = new Map<string, number>();
-      for (const v of views ?? []) counts.set(v.deal_id, (counts.get(v.deal_id) ?? 0) + 1);
+      const viewCounts = new Map<string, number>();
+      const lastEvent = new Map<string, string>();
+      for (const e of events.data ?? []) {
+        if (!lastEvent.has(e.deal_id)) lastEvent.set(e.deal_id, e.created_at);
+        if (e.type === "view") viewCounts.set(e.deal_id, (viewCounts.get(e.deal_id) ?? 0) + 1);
+      }
+      // Deal value = base options + add-ons that start toggled on
+      const totals = new Map<string, number>();
+      for (const o of options.data ?? []) {
+        if (o.kind === "base" || o.default_selected) {
+          totals.set(o.deal_id, (totals.get(o.deal_id) ?? 0) + o.price_cents);
+        }
+      }
 
-      res.json((deals ?? []).map((d) => ({ ...d, view_count: counts.get(d.id) ?? 0 })));
+      res.json(
+        (deals ?? []).map((d) => ({
+          ...d,
+          view_count: viewCounts.get(d.id) ?? 0,
+          total_cents: totals.get(d.id) ?? 0,
+          last_event_at: lastEvent.get(d.id) ?? null,
+        }))
+      );
     })
   );
 

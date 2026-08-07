@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import type { Milestone, Option } from "@shared/schema";
 import { CheckIcon } from "@/components/Icons";
+import { formatWeeks } from "@/lib/format";
 
 interface Block {
   id: string;
@@ -18,8 +19,8 @@ interface Props {
   addonPhases: Option[];
 }
 
-const PX_PER_WEEK = 104;
-const spring = { type: "spring", stiffness: 320, damping: 32 } as const;
+const PX = 92;
+const spring = { type: "spring", stiffness: 300, damping: 32 } as const;
 
 function weekLabel(block: Block): string {
   const first = block.weekStart + 1;
@@ -55,104 +56,125 @@ export default function Timeline({ milestones, addonPhases }: Props) {
     cursor += addon.weeks;
   }
   const totalWeeks = cursor;
+  const gridW = totalWeeks * PX;
 
   const expanded = blocks.find((b) => b.id === expandedId) ?? null;
 
   return (
-    <div>
-      <div className="timeline-scroll -mx-6 overflow-x-auto px-6 pb-3">
-        <div className="min-w-max pr-6">
+    <div className="card p-5 md:p-7">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+            Project roadmap
+          </p>
+          <p className="mt-0.5 text-sm text-ink-soft">
+            {blocks.length} phases · tap one for deliverables
+          </p>
+        </div>
+        <motion.span
+          key={totalWeeks}
+          initial={{ scale: 0.92 }}
+          animate={{ scale: 1 }}
+          transition={spring}
+          className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold tabular-nums text-cream"
+        >
+          {formatWeeks(totalWeeks)} total
+        </motion.span>
+      </div>
+
+      <div className="timeline-scroll -mx-5 overflow-x-auto px-5 md:-mx-7 md:px-7">
+        <div className="relative min-w-max pb-2" style={{ width: gridW + 150 }}>
           {/* Week ruler */}
-          <div className="mb-2 flex">
+          <div className="flex border-b border-ink/10 pb-2" style={{ width: gridW }}>
             {Array.from({ length: totalWeeks }).map((_, w) => (
               <motion.div
                 key={w}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                style={{ width: PX_PER_WEEK }}
-                className="flex-none border-l border-ink/15 pl-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint"
+                style={{ width: PX }}
+                className="flex-none text-[10px] font-semibold uppercase tracking-wider text-ink-faint"
               >
                 Week {w + 1}
               </motion.div>
             ))}
           </div>
 
-          {/* Phase blocks on a week grid */}
+          {/* Week grid lines behind the bars */}
           <div
-            className="relative flex items-stretch"
+            aria-hidden
+            className="absolute bottom-2 top-8 left-0"
             style={{
-              backgroundImage: `repeating-linear-gradient(to right, rgba(25,23,20,0.07) 0 1px, transparent 1px ${PX_PER_WEEK}px)`,
+              width: gridW + 1,
+              backgroundImage: `repeating-linear-gradient(to right, rgba(25,23,20,0.07) 0 1px, transparent 1px ${PX}px)`,
             }}
-          >
+          />
+
+          {/* Gantt rows */}
+          <div className="relative space-y-2.5 pt-4">
             <AnimatePresence initial={false}>
               {blocks.map((block) => {
                 const isOpen = block.id === expandedId;
                 return (
                   <motion.div
                     key={block.id}
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: Math.max(1, block.weekLength) * PX_PER_WEEK, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
+                    layout
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 44 }}
+                    exit={{ opacity: 0, height: 0 }}
                     transition={spring}
-                    className="flex-none overflow-hidden py-1 pr-2"
+                    className="relative"
                   >
-                    <button
+                    <motion.button
+                      layout
+                      initial={{ width: 0 }}
+                      animate={{ left: block.weekStart * PX, width: Math.max(1, block.weekLength) * PX - 10 }}
+                      transition={spring}
                       onClick={() => setExpandedId(isOpen ? null : block.id)}
-                      className={`group relative block h-28 w-full overflow-hidden rounded-xl border p-3.5 text-left transition-all ${
+                      style={{ position: "absolute" }}
+                      className={`top-0 flex h-11 items-center gap-2 overflow-hidden rounded-xl px-3.5 text-left transition-shadow ${
                         block.isAddon
-                          ? isOpen
-                            ? "border-ember bg-ember-soft shadow-card"
-                            : "border-ember/40 bg-ember-soft/60 hover:-translate-y-0.5 hover:border-ember hover:shadow-card"
-                          : isOpen
-                            ? "border-ink bg-white shadow-card"
-                            : "border-ink/10 bg-white hover:-translate-y-0.5 hover:border-ink/40 hover:shadow-card"
-                      }`}
+                          ? "bg-ember text-white hover:shadow-pop"
+                          : "bg-ink text-cream hover:shadow-pop"
+                      } ${isOpen ? "ring-2 ring-ember ring-offset-2 ring-offset-white" : ""}`}
                     >
-                      <span
-                        className={`absolute inset-x-0 top-0 h-1 ${block.isAddon ? "bg-ember" : "bg-ink"}`}
-                      />
-                      <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-ink-faint">
-                        {weekLabel(block)}
-                        {block.isAddon && <span className="ml-1.5 text-ember-deep">· add-on</span>}
-                      </p>
-                      <p className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug">{block.title}</p>
-                      <p className="mt-1 truncate text-xs text-ink-faint">
-                        {block.deliverables.length > 0
-                          ? `${block.deliverables.length} deliverable${block.deliverables.length === 1 ? "" : "s"}`
-                          : "Included"}
-                      </p>
-                      <span
-                        className={`mt-2 inline-block text-[10px] font-semibold uppercase tracking-wider transition-opacity ${
-                          isOpen ? "text-ember-deep opacity-100" : "text-ink-faint opacity-0 group-hover:opacity-100"
-                        }`}
-                      >
-                        {isOpen ? "Close" : "Details"}
+                      <span className="truncate text-xs font-semibold">{block.title}</span>
+                      <span className="ml-auto flex-none text-[10px] font-medium opacity-60">
+                        {block.weekLength}w
                       </span>
-                    </button>
+                    </motion.button>
                   </motion.div>
                 );
               })}
             </AnimatePresence>
-
-            {/* Launch marker */}
-            <motion.div layout transition={spring} className="flex flex-none items-center py-1">
-              <div className="flex items-center gap-2 whitespace-nowrap rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold text-cream">
-                🚀 Launch · week {totalWeeks}
-              </div>
-            </motion.div>
           </div>
+
+          {/* Launch marker */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute bottom-2 top-8 border-l-2 border-dashed border-ember/60"
+            animate={{ left: gridW }}
+            transition={spring}
+          />
+          <motion.div
+            animate={{ left: gridW + 12 }}
+            transition={spring}
+            className="absolute top-8 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ember px-3 py-1.5 text-xs font-semibold text-white shadow-card"
+            style={{ position: "absolute" }}
+          >
+            🚀 Launch
+          </motion.div>
         </div>
       </div>
 
       <AnimatePresence mode="wait">
-        {expanded ? (
+        {expanded && (
           <motion.div
             key={expanded.id}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.18 }}
-            className="mt-4 rounded-xl border border-ink/10 bg-white p-5"
+            className="mt-5 rounded-xl border border-ink/10 bg-cream-deep/50 p-5"
           >
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <p className="font-display text-lg font-semibold">{expanded.title}</p>
@@ -165,7 +187,7 @@ export default function Timeline({ milestones, addonPhases }: Props) {
                 </span>
               )}
             </div>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
               {expanded.deliverables.map((d) => (
                 <li key={d} className="flex items-start gap-2.5 text-sm text-ink-soft">
                   <CheckIcon className="mt-0.5 h-4 w-4 flex-none text-ember" />
@@ -174,16 +196,6 @@ export default function Timeline({ milestones, addonPhases }: Props) {
               ))}
             </ul>
           </motion.div>
-        ) : (
-          <motion.p
-            key="hint"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mt-4 text-sm text-ink-faint"
-          >
-            Tap a phase to see its deliverables — add-ons you select appear on the roadmap.
-          </motion.p>
         )}
       </AnimatePresence>
     </div>
