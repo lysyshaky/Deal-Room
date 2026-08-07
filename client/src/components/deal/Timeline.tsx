@@ -115,7 +115,7 @@ export default function Timeline({ milestones, addonPhases }: Props) {
                         {weekLabel(block)}
                         {block.isAddon && <span className="ml-1.5 text-ember-deep">· add-on</span>}
                       </p>
-                      <p className="mt-1.5 truncate text-sm font-semibold">{block.title}</p>
+                      <p className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug">{block.title}</p>
                       <p className="mt-1 truncate text-xs text-ink-faint">
                         {block.deliverables.length > 0
                           ? `${block.deliverables.length} deliverable${block.deliverables.length === 1 ? "" : "s"}`

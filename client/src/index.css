@@ -36,6 +36,48 @@
   }
 }
 
+/* Ambient drifting gradient blobs (hero backgrounds) */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(42px, -28px) scale(1.08);
+  }
+  66% {
+    transform: translate(-30px, 22px) scale(0.94);
+  }
+}
+.ambient-blob {
+  animation: drift 18s ease-in-out infinite;
+}
+
+/* Flame badge flicker */
+@keyframes flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.15) rotate(-5deg);
+  }
+  70% {
+    transform: scale(0.95) rotate(4deg);
+  }
+}
+.flame-flicker {
+  animation: flicker 1.7s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob,
+  .flame-flicker {
+    animation: none;
+  }
+}
+
 /* Horizontal timeline scroller: subtle scrollbar */
 .timeline-scroll::-webkit-scrollbar {
   height: 6px;

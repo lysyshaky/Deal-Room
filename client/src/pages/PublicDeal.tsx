@@ -131,8 +131,12 @@ export default function PublicDeal() {
       </header>
 
       {/* ---------- Hero ---------- */}
-      <section className="px-6 pb-16 pt-14 md:pt-24">
-        <div className="mx-auto max-w-3xl">
+      <section className="relative overflow-hidden px-6 pb-16 pt-14 md:pt-24">
+        <div
+          aria-hidden
+          className="ambient-blob pointer-events-none absolute -top-20 right-[-10%] h-96 w-96 rounded-full bg-ember/10 blur-3xl"
+        />
+        <div className="relative mx-auto max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
             <p className="eyebrow">
               {deal.title}
@@ -185,9 +189,9 @@ export default function PublicDeal() {
               <motion.div
                 key={option.id}
                 {...fadeUp}
-                className="flex gap-5 border-b border-ink/10 py-7 first:border-t md:gap-8"
+                className="group flex gap-5 border-b border-ink/10 py-7 first:border-t md:gap-8"
               >
-                <span className="font-display text-lg font-semibold text-ink/25">
+                <span className="font-display text-lg font-semibold text-ink/25 transition-colors group-hover:text-ember">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -258,9 +262,15 @@ export default function PublicDeal() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   Total investment
                 </p>
-                <p className="mt-1 font-display text-4xl font-semibold tabular-nums tracking-tight">
+                <motion.p
+                  key={totalCents}
+                  initial={{ scale: 0.96 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 20 }}
+                  className="mt-1 origin-left font-display text-4xl font-semibold tabular-nums tracking-tight"
+                >
                   {displayTotal}
-                </p>
+                </motion.p>
                 <p className="mt-1.5 text-sm text-ink-faint">
                   Estimated timeline: <span className="font-semibold text-ink">{displayWeeks}</span>
                 </p>
@@ -396,7 +406,15 @@ export default function PublicDeal() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-cream/95 px-5 py-3 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
             <div>
-              <p className="font-display text-xl font-semibold tabular-nums leading-tight">{displayTotal}</p>
+              <motion.p
+                key={totalCents}
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 420, damping: 20 }}
+                className="origin-left font-display text-xl font-semibold tabular-nums leading-tight"
+              >
+                {displayTotal}
+              </motion.p>
               <p className="text-xs text-ink-faint">{displayWeeks}</p>
             </div>
             <button onClick={() => setModalOpen(true)} className="btn-primary flex-none !px-5">

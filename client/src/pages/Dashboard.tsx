@@ -56,7 +56,7 @@ function DealCard({ deal }: { deal: DealSummary }) {
         </span>
         {deal.view_count > 3 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-ember-soft px-2.5 py-0.5 text-xs font-semibold text-ember-deep">
-            <FlameIcon className="h-3.5 w-3.5" />
+            <FlameIcon className="flame-flicker h-3.5 w-3.5" />
             viewed {deal.view_count} times
           </span>
         )}

@@ -153,8 +153,17 @@ export default function Landing() {
       </header>
 
       {/* Hero with live mini demo */}
-      <section className="px-6 pb-16 pt-14 md:pt-20">
-        <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="relative overflow-hidden px-6 pb-16 pt-14 md:pt-20">
+        <div
+          aria-hidden
+          className="ambient-blob pointer-events-none absolute -top-24 right-[-8%] h-96 w-96 rounded-full bg-ember/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="ambient-blob pointer-events-none absolute bottom-[-30%] left-[-6%] h-80 w-80 rounded-full bg-amber-200/40 blur-3xl"
+          style={{ animationDelay: "-9s" }}
+        />
+        <div className="relative mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
