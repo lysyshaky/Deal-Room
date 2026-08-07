@@ -1,0 +1,16 @@
+run = "npm run dev"
+entrypoint = "server/index.ts"
+modules = ["nodejs-20"]
+hidden = [".config", "node_modules", "dist"]
+
+[nix]
+channel = "stable-24_05"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
+deploymentTarget = "autoscale"
