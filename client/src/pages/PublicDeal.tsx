@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import type { Deal, DealDetail, Option } from "@shared/schema";
 import AcceptModal, { NextSteps } from "@/components/deal/AcceptModal";
 import Timeline from "@/components/deal/Timeline";
@@ -114,9 +114,13 @@ export default function PublicDeal() {
       <header className="sticky top-0 z-40 border-b border-ink/5 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
           <span className="flex items-center gap-2 text-sm font-medium text-ink-faint">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-ember font-display text-xs font-bold text-white">
+            <Link
+              to="/"
+              title="Deal Room home"
+              className="flex h-6 w-6 items-center justify-center rounded-lg bg-ember font-display text-xs font-bold text-white transition hover:bg-ember-deep"
+            >
               D
-            </span>
+            </Link>
             {deal.title}
           </span>
           {accepted ? (

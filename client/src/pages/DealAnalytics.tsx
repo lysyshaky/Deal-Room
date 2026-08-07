@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { DealAnalytics as Analytics, EventRow } from "@shared/schema";
+import type { DealAnalytics as Analytics, DealDetail, EventRow } from "@shared/schema";
 import AdminShell from "@/components/AdminShell";
+import Timeline from "@/components/deal/Timeline";
 import { ArrowLeftIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import StatusBadge from "@/components/StatusBadge";
@@ -31,12 +32,18 @@ const EVENT_DOTS: Record<EventRow["type"], string> = {
 export default function DealAnalytics() {
   const { id } = useParams();
   const [data, setData] = useState<Analytics | null>(null);
+  const [detail, setDetail] = useState<DealDetail | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     api<Analytics>(`/api/deals/${id}/analytics`)
       .then(setData)
       .catch((e: Error) => setError(e.message));
+    api<DealDetail>(`/api/deals/${id}`)
+      .then(setDetail)
+      .catch(() => {
+        // The roadmap is a bonus panel — analytics still render without it.
+      });
   }, [id]);
 
   if (!data) {
@@ -79,6 +86,17 @@ export default function DealAnalytics() {
           </div>
         ))}
       </div>
+
+      {detail && detail.milestones.length > 0 && (
+        <div className="mb-6">
+          <Timeline
+            milestones={detail.milestones}
+            addonPhases={detail.options.filter(
+              (o) => o.kind === "addon" && o.default_selected && o.weeks > 0
+            )}
+          />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-6 md:p-8">

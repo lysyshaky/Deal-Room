@@ -140,12 +140,12 @@ export default function Landing() {
     <div className="min-h-screen bg-cream">
       <header className="border-b border-ink/5">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <span className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5" title="Deal Room home">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-ember font-display text-base font-bold text-white">
               D
             </span>
             <span className="font-display text-lg font-semibold tracking-tight">Deal Room</span>
-          </span>
+          </Link>
           <Link to="/dashboard" className="btn-ghost">
             Owner dashboard
           </Link>

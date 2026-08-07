@@ -114,6 +114,8 @@ export default function Timeline({ milestones, addonPhases }: Props) {
             <AnimatePresence initial={false}>
               {blocks.map((block) => {
                 const isOpen = block.id === expandedId;
+                const barW = Math.max(1, block.weekLength) * PX - 10;
+                const narrow = barW < 118;
                 return (
                   <motion.div
                     key={block.id}
@@ -127,7 +129,7 @@ export default function Timeline({ milestones, addonPhases }: Props) {
                     <motion.button
                       layout
                       initial={{ width: 0 }}
-                      animate={{ left: block.weekStart * PX, width: Math.max(1, block.weekLength) * PX - 10 }}
+                      animate={{ left: block.weekStart * PX, width: barW }}
                       transition={spring}
                       onClick={() => setExpandedId(isOpen ? null : block.id)}
                       style={{ position: "absolute" }}
@@ -137,11 +139,27 @@ export default function Timeline({ milestones, addonPhases }: Props) {
                           : "bg-ink text-cream hover:shadow-pop"
                       } ${isOpen ? "ring-2 ring-ember ring-offset-2 ring-offset-white" : ""}`}
                     >
-                      <span className="truncate text-xs font-semibold">{block.title}</span>
-                      <span className="ml-auto flex-none text-[10px] font-medium opacity-60">
-                        {block.weekLength}w
-                      </span>
+                      {!narrow && (
+                        <>
+                          <span className="truncate text-xs font-semibold">{block.title}</span>
+                          <span className="ml-auto flex-none text-[10px] font-medium opacity-60">
+                            {block.weekLength}w
+                          </span>
+                        </>
+                      )}
                     </motion.button>
+                    {narrow && (
+                      <motion.span
+                        layout
+                        animate={{ left: block.weekStart * PX + barW + 10 }}
+                        transition={spring}
+                        style={{ position: "absolute" }}
+                        className="pointer-events-none top-0 flex h-11 items-center whitespace-nowrap text-xs font-semibold text-ink"
+                      >
+                        {block.title}
+                        <span className="ml-1.5 font-medium text-ink-faint">· {block.weekLength}w</span>
+                      </motion.span>
+                    )}
                   </motion.div>
                 );
               })}
@@ -170,29 +188,52 @@ export default function Timeline({ milestones, addonPhases }: Props) {
         {expanded && (
           <motion.div
             key={expanded.id}
-            initial={{ opacity: 0, y: -6 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18 }}
-            className="mt-5 rounded-xl border border-ink/10 bg-cream-deep/50 p-5"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mt-5 overflow-hidden rounded-2xl border border-ink/10"
           >
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-ink/10 bg-white px-5 py-4 md:px-6">
+              <span
+                className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg font-display text-sm font-bold ${
+                  expanded.isAddon ? "bg-ember text-white" : "bg-ink text-cream"
+                }`}
+              >
+                {String(blocks.indexOf(expanded) + 1).padStart(2, "0")}
+              </span>
               <p className="font-display text-lg font-semibold">{expanded.title}</p>
-              <span className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+              <span className="rounded-full bg-cream-deep px-2.5 py-1 text-xs font-semibold text-ink-soft">
                 {weekLabel(expanded)}
               </span>
               {expanded.isAddon && (
-                <span className="rounded-full bg-ember-soft px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ember-deep">
+                <span className="rounded-full bg-ember-soft px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ember-deep">
                   Add-on
                 </span>
               )}
+              <span className="ml-auto hidden text-xs font-medium text-ink-faint sm:block">
+                {expanded.deliverables.length} deliverable{expanded.deliverables.length === 1 ? "" : "s"}
+              </span>
             </div>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {expanded.deliverables.map((d) => (
-                <li key={d} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                  <CheckIcon className="mt-0.5 h-4 w-4 flex-none text-ember" />
-                  {d}
-                </li>
+            <ul className="grid gap-2.5 bg-cream-deep/50 p-5 sm:grid-cols-2 md:p-6">
+              {expanded.deliverables.map((d, i) => (
+                <motion.li
+                  key={d}
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05 + i * 0.07, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-3 rounded-xl border border-ink/10 bg-white px-4 py-3"
+                >
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.14 + i * 0.07, type: "spring", stiffness: 520, damping: 22 }}
+                    className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-ember text-white"
+                  >
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  </motion.span>
+                  <span className="text-sm font-medium">{d}</span>
+                </motion.li>
               ))}
             </ul>
           </motion.div>
