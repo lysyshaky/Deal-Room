@@ -46,6 +46,14 @@ const DEMOS: { tag: string; title: string; client: string; blurb: string; slug: 
       "Proof it works for small deals too: a two-week site with booking and SEO add-ons, still sitting in draft.",
     slug: "nordic-yoga-landing",
   },
+  {
+    tag: "Branding",
+    title: "Brand & Website for LYQX",
+    client: "Yurii",
+    blurb:
+      "The happy ending — Yurii already signed this one. Open it to see the accepted state: signature, date and what happens next.",
+    slug: "lyqx-brand-website",
+  },
 ];
 
 const FEATURES: { icon: (p: { className?: string }) => JSX.Element; title: string; detail: string }[] = [
@@ -197,7 +205,7 @@ export default function Landing() {
               add-ons, ask a question, sign it.
             </p>
           </motion.div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
             {DEMOS.map((demo, i) => (
               <motion.div
                 key={demo.slug}
@@ -348,6 +356,7 @@ export default function Landing() {
                   ["App development", "/deal/greencafe-mobile-app"],
                   ["Motion design", "/deal/pulse-brand-motion"],
                   ["Web design", "/deal/nordic-yoga-landing"],
+                  ["Branding", "/deal/lyqx-brand-website"],
                 ],
               },
               {
