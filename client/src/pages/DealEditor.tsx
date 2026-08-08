@@ -640,8 +640,10 @@ export default function DealEditor() {
           className="space-y-4 lg:sticky lg:top-6"
         >
           <div className="card overflow-hidden">
-            <div className="h-36 border-b border-ink/5 bg-cream-deep/50">
-              <TypeVisual type={form.project_type} />
+            <div className="relative h-36 overflow-hidden border-b border-ink/5 bg-cream-deep/50">
+              <div className="absolute left-1/2 top-1/2 h-72 w-80 -translate-x-1/2 -translate-y-1/2 scale-[0.5]">
+                <TypeVisual type={form.project_type} />
+              </div>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-3">
