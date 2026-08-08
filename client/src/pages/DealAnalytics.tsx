@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import type { Comment, DealAnalytics as Analytics, DealDetail, EventRow } from "@shared/schema";
 import AdminShell from "@/components/AdminShell";
 import Timeline from "@/components/deal/Timeline";
-import { ArrowLeftIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import StatusBadge from "@/components/StatusBadge";
 import { api } from "@/lib/api";
@@ -87,8 +86,7 @@ export default function DealAnalytics() {
 
   return (
     <AdminShell>
-      <Link to="/dashboard" className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-faint hover:text-ink">
-        <ArrowLeftIcon className="h-3.5 w-3.5" />
+      <Link to="/dashboard" className="btn-ghost mb-6">
         Back to deals
       </Link>
 

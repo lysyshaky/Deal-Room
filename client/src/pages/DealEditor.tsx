@@ -11,7 +11,7 @@ import {
 import AdminShell from "@/components/AdminShell";
 import Toggle from "@/components/deal/Toggle";
 import TypeVisual from "@/components/deal/TypeVisual";
-import { ArrowLeftIcon, CheckIcon, CopyIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/Icons";
+import { CheckIcon, CopyIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import { api } from "@/lib/api";
 import { formatMoney, formatWeeks } from "@/lib/format";
@@ -297,11 +297,7 @@ export default function DealEditor() {
 
   return (
     <AdminShell>
-      <Link
-        to="/dashboard"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-faint hover:text-ink"
-      >
-        <ArrowLeftIcon className="h-3.5 w-3.5" />
+      <Link to="/dashboard" className="btn-ghost mb-6">
         Back to deals
       </Link>
 

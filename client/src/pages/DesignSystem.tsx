@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Toggle from "@/components/deal/Toggle";
-import { ArrowLeftIcon, CheckIcon, FlameIcon } from "@/components/Icons";
+import { CheckIcon, FlameIcon } from "@/components/Icons";
 import Spinner from "@/components/Spinner";
 import StatusBadge from "@/components/StatusBadge";
 
@@ -40,8 +40,7 @@ export default function DesignSystem() {
             <span className="font-display text-lg font-semibold tracking-tight">Deal Room</span>
           </Link>
           <Link to="/" className="btn-ghost">
-            <ArrowLeftIcon className="h-3.5 w-3.5" />
-            Back
+            Back to home
           </Link>
         </div>
       </header>
