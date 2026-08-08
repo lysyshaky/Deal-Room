@@ -1,4 +1,9 @@
 import "dotenv/config";
+// supabase-js needs a WebSocket global; Node < 22 doesn't ship one.
+if (typeof (globalThis as { WebSocket?: unknown }).WebSocket === "undefined") {
+  const { WebSocket } = await import("ws");
+  (globalThis as { WebSocket?: unknown }).WebSocket = WebSocket;
+}
 import express from "express";
 import http from "http";
 import path from "path";

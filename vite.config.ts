@@ -8,6 +8,8 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: path.resolve(rootDir, "client"),
   plugins: [react()],
+  // Dev server is reached through changing hosts (Replit, tunnels) — allow them.
+  server: { allowedHosts: true },
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "client", "src"),
